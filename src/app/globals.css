@@ -1,0 +1,142 @@
+@import "tailwindcss";
+
+:root {
+  --bg-dark: #0a0b0a;
+  --bg-light: #fafaf8;
+  --fg-dark: #f5f6f4;
+  --fg-light: #0a0b0a;
+  --muted-dark: #8b8f8a;
+  --muted-light: #6b6e68;
+  --accent: #30e6b0;
+  --accent-soft: rgba(48, 230, 176, 0.14);
+  --border-dark: rgba(245, 246, 244, 0.12);
+  --border-light: rgba(10, 11, 10, 0.1);
+}
+
+@theme inline {
+  --color-bg-dark: var(--bg-dark);
+  --color-bg-light: var(--bg-light);
+  --color-fg-dark: var(--fg-dark);
+  --color-fg-light: var(--fg-light);
+  --color-muted-dark: var(--muted-dark);
+  --color-muted-light: var(--muted-light);
+  --color-accent: var(--accent);
+  --font-sans: var(--font-dm-sans);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--bg-dark);
+  color: var(--fg-dark);
+  font-family: var(--font-dm-sans), "DM Sans", system-ui, sans-serif;
+  cursor: none;
+}
+
+@media (pointer: coarse) {
+  body {
+    cursor: auto;
+  }
+}
+
+::selection {
+  background: var(--accent);
+  color: #06100c;
+}
+
+[data-theme="light"] {
+  background: var(--bg-light);
+  color: var(--fg-light);
+}
+
+[data-theme="dark"] {
+  background: var(--bg-dark);
+  color: var(--fg-dark);
+}
+
+.text-muted {
+  color: var(--muted-dark);
+}
+
+[data-theme="light"] .text-muted {
+  color: var(--muted-light);
+}
+
+[data-theme="dark"] .text-muted {
+  color: var(--muted-dark);
+}
+
+.fade-heading span {
+  display: inline-block;
+}
+
+.fade-heading .is-faded {
+  color: var(--muted-dark);
+}
+
+[data-theme="light"] .fade-heading .is-faded {
+  color: var(--muted-light);
+}
+
+.accent-dot::after {
+  content: "";
+  display: inline-block;
+  width: 0.18em;
+  height: 0.18em;
+  margin-left: 0.08em;
+  border-radius: 999px;
+  background: var(--accent);
+  vertical-align: middle;
+  transform: translateY(-0.28em);
+}
+
+/* Buttons: square, no glow. On dark sections: transparent with a thin white
+   border. On light sections: solid accent green. The text roll on hover is
+   the interaction. */
+.btn {
+  background: transparent;
+  border: 1px solid rgba(245, 246, 244, 0.55);
+  color: var(--fg-dark);
+  transition: border-color 200ms ease, background-color 200ms ease;
+}
+
+.btn:hover {
+  border-color: var(--fg-dark);
+}
+
+.btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+[data-theme="light"] .btn {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #06100c;
+}
+
+[data-theme="light"] .btn:hover {
+  background: #5cf0c4;
+  border-color: #5cf0c4;
+}
+
+/* Comes after the light rule so a dark block inside a light section wins. */
+[data-theme="dark"] .btn {
+  background: transparent;
+  border-color: rgba(245, 246, 244, 0.55);
+  color: var(--fg-dark);
+}
+
+[data-theme="dark"] .btn:hover {
+  border-color: var(--fg-dark);
+}
+
+.grid-floor {
+  background-image:
+    linear-gradient(to right, rgba(48, 230, 176, 0.08) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(48, 230, 176, 0.08) 1px, transparent 1px);
+  background-size: 56px 56px;
+  mask-image: radial-gradient(ellipse 80% 60% at 50% 40%, black 40%, transparent 85%);
+}
