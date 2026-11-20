@@ -4,7 +4,6 @@ export const nav = [
   { label: "Especialidades", href: "#especialidades" },
   { label: "Consultoría", href: "#consultoria" },
   { label: "Cómo funciona", href: "#como-funciona" },
-  { label: "FAQ", href: "#faq" },
 ];
 
 export const hero = {
@@ -121,27 +120,39 @@ export const audience = {
 
 export const process = {
   eyebrow: "Cómo funciona",
-  heading: "Un proceso simple, desde la consulta hasta la acción.",
+  heading: "Las buenas decisiones empiezan con una conversación.",
   steps: [
     {
       number: "01",
-      title: "Elegís tu horario",
-      description: "Seleccionás un día y horario disponible en el calendario.",
+      title: "Contanos qué necesitás",
+      description:
+        "Completá el formulario inicial con información sobre tu empresa, actividad y los desafíos que querés abordar.",
     },
     {
       number: "02",
-      title: "Completás tus datos",
+      title: "Elegí tu horario",
       description:
-        "Nos contás brevemente quién sos, a qué te dedicás y qué tema querés trabajar.",
+        "Seleccioná uno de los turnos disponibles para coordinar tu consultoría individual de 60 minutos.",
     },
     {
       number: "03",
-      title: "Confirmás tu reserva",
+      title: "Confirmá tu reserva",
       description:
-        "Recibís las instrucciones para realizar el pago mediante transferencia. Una vez verificada la acreditación, confirmamos tu turno.",
+        "Recibí las instrucciones de pago y realizá la transferencia para avanzar con la reserva de tu sesión.",
+    },
+    {
+      number: "04",
+      title: "Preparemos el encuentro",
+      description:
+        "Una vez acreditado el pago, recibirás la confirmación del turno y un breve formulario para profundizar en tus necesidades.",
+    },
+    {
+      number: "05",
+      title: "Pasemos a la acción",
+      description:
+        "Nos reunimos durante 60 minutos para analizar tu situación, identificar oportunidades y definir recomendaciones y próximos pasos.",
     },
   ],
-  cta: "Reservar",
 };
 
 export const about = {
@@ -155,38 +166,6 @@ export const about = {
   cta: "Ver trayectoria profesional",
   placeholder:
     "Esta sección deberá completarse con su biografía validada, experiencia, cargos, organizaciones y proyectos destacados.",
-};
-
-export const faq = {
-  eyebrow: "Preguntas frecuentes",
-  heading: "Todo lo que necesitás saber antes de reservar.",
-  items: [
-    {
-      question: "¿Necesito tener conocimientos técnicos para realizar una consultoría?",
-      answer:
-        "No. La sesión está pensada para comprender tu situación y evaluar oportunidades. No necesitás conocimientos previos sobre inteligencia artificial o tecnología.",
-    },
-    {
-      question: "¿Puedo consultar sobre un problema específico de mi empresa?",
-      answer:
-        "Sí. Podés llevar una situación concreta, un proceso que quieras mejorar, una idea o una decisión tecnológica que necesites evaluar.",
-    },
-    {
-      question: "¿Cómo se confirma la reserva?",
-      answer:
-        "Al seleccionar el horario y completar tus datos, recibirás las instrucciones de pago. La reserva queda pendiente hasta verificar la acreditación.",
-    },
-    {
-      question: "¿La consultoría es virtual?",
-      answer:
-        "Sí. La reunión se realiza de manera virtual. Una vez confirmada la reserva, recibirás los datos de acceso.",
-    },
-    {
-      question: "¿Qué sucede después de la reunión?",
-      answer:
-        "Recibirás una devolución ejecutiva con las recomendaciones y los próximos pasos definidos durante la consultoría.",
-    },
-  ],
 };
 
 export const finalCta = {

@@ -25,7 +25,6 @@ export interface SpineAccordionProps
 }
 
 const EASE = "ease-[cubic-bezier(0.22,1,0.36,1)]";
-const pad = (n: number) => String(n).padStart(2, "0");
 
 export function SpineAccordion({
   items,
@@ -88,15 +87,16 @@ export function SpineAccordion({
                   isOpen ? "pointer-events-none opacity-0" : "opacity-100 delay-200"
                 )}
               >
-                <span className="absolute left-5 top-0 flex h-[var(--spine)] items-center text-xs tabular-nums text-muted @3xl:top-6 @3xl:h-auto">
-                  {pad(i + 1)}
-                </span>
-                <span className="absolute right-5 top-0 flex h-[var(--spine)] items-center @3xl:top-6 @3xl:h-auto">
-                  <span className="block size-2 rounded-full bg-accent" />
+                {/* Brand mark (same as the logo) instead of a dot */}
+                <span
+                  aria-hidden
+                  className="absolute right-5 top-0 flex h-[var(--spine)] items-center text-lg leading-none text-accent @3xl:left-1/2 @3xl:right-auto @3xl:top-6 @3xl:h-auto @3xl:-translate-x-1/2"
+                >
+                  ⊹
                 </span>
                 <span
                   className={cn(
-                    "absolute left-14 top-0 flex h-[var(--spine)] items-center whitespace-nowrap text-lg font-semibold tracking-tight",
+                    "absolute left-5 top-0 flex h-[var(--spine)] items-center whitespace-nowrap text-lg font-semibold tracking-tight",
                     "@3xl:left-1/2 @3xl:top-auto @3xl:bottom-6 @3xl:h-auto @3xl:-translate-x-1/2 @3xl:rotate-180 @3xl:text-4xl @3xl:leading-none @3xl:[writing-mode:vertical-rl]"
                   )}
                 >
@@ -140,7 +140,6 @@ export function SpineAccordion({
                   <span className="text-[clamp(1.75rem,5cqw,3.5rem)] font-semibold leading-none tracking-tight">
                     {item.title}
                   </span>
-                  <span className="shrink-0 pt-1 text-xs tabular-nums opacity-70">{pad(i + 1)}</span>
                 </span>
                 <span className="block max-w-xl">
                   <span className="block text-base leading-relaxed @3xl:text-2xl @3xl:leading-snug">

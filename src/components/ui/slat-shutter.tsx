@@ -50,6 +50,15 @@ export interface SlatShutterProps {
 // seen. `true` outside a shutter, so components work the same anywhere.
 const RevealedContext = React.createContext(true);
 
+// Which layer the shutter is showing, for content that needs to know (e.g. to
+// pause work while hidden). "cover" outside a shutter.
+type ShutterPhase = "cover" | "moving" | "done";
+const PhaseContext = React.createContext<ShutterPhase>("cover");
+
+export function useShutterPhase() {
+  return React.useContext(PhaseContext);
+}
+
 /** `true` once the slats have opened far enough to show the content behind them. */
 export function useShutterRevealed() {
   return React.useContext(RevealedContext);
@@ -136,7 +145,7 @@ export function SlatShutter({
   // No slat moves before SLATS_START, so the real cover stays up until then:
   // scrolling back to the top always returns to the untouched cover, even
   // while the spring is still settling.
-  const [phase, setPhase] = React.useState<"cover" | "moving" | "done">("cover");
+  const [phase, setPhase] = React.useState<ShutterPhase>("cover");
   // Latches: once revealed, entrances don't replay when scrolling back up.
   const [revealed, setRevealed] = React.useState(false);
   useMotionValueEvent(progress, "change", (p) => {
@@ -188,6 +197,7 @@ export function SlatShutter({
         />
       ) : null}
 
+      <PhaseContext.Provider value={phase}>
       <div className="sticky top-0 overflow-x-clip">
         {/* Revealed content, pinned while the slats open */}
         <motion.div
@@ -231,6 +241,7 @@ export function SlatShutter({
           {cover}
         </div>
       </div>
+      </PhaseContext.Provider>
 
       {/* Scroll room for the reveal */}
       <div aria-hidden style={{ height: `${length}vh` }} />

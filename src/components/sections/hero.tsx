@@ -4,14 +4,16 @@ import { motion } from "framer-motion";
 import { Section } from "@/components/section";
 import { Button } from "@/components/button";
 import { hero } from "@/lib/content";
+import { HeroSmoke } from "@/components/ui/hero-smoke";
 
 /** Layout classes of the hero section, shared with its visual copies. */
 export const HERO_CLASS =
-  "relative flex min-h-screen flex-col justify-center overflow-hidden px-6 pt-32 pb-20 md:px-10";
+  "relative isolate flex min-h-screen flex-col justify-center overflow-hidden px-6 pt-32 pb-20 md:px-10";
 
 export function Hero() {
   return (
     <Section id="inicio" theme="dark" className={HERO_CLASS}>
+      <HeroSmoke />
       <HeroContent />
     </Section>
   );
@@ -22,58 +24,48 @@ export function Hero() {
 export function HeroContent() {
   return (
     <>
-      <div className="grid-floor absolute inset-0 -z-10" />
       <div className="absolute inset-0 -z-10 bg-gradient-to-b from-transparent via-transparent to-bg-dark" />
 
-      <motion.h1
-        initial={{ opacity: 0, y: 24 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
-        className="mx-auto max-w-6xl text-center text-[15vw] font-medium leading-[0.86] tracking-tight text-fg-dark md:text-[7.8vw]"
-      >
-        {hero.headingPrefix}{" "}
-        <span
-          className="text-accent italic"
-          style={{ fontFamily: "var(--font-accent-serif)" }}
-        >
-          {hero.headingHighlight}
-        </span>
-        {hero.headingSuffix}
-      </motion.h1>
+      {/* Same column as the next section (mx-auto max-w-6xl px-6 md:px-10),
+          so the text starts on the same vertical line. The negative margin
+          cancels the section padding, which that column already includes. */}
+      <div className="-mx-6 md:-mx-10">
+        <div className="mx-auto w-full max-w-6xl px-6 md:px-10">
+          <motion.h1
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
+            className="max-w-[15ch] text-left text-[11.5vw] font-medium leading-[0.9] tracking-tight text-fg-dark md:text-[5.6vw]"
+          >
+            {hero.headingPrefix}{" "}
+            <span
+              className="whitespace-nowrap italic"
+              style={{ fontFamily: "var(--font-accent-serif)" }}
+            >
+              {hero.headingHighlight}
+            </span>
+            {hero.headingSuffix}
+          </motion.h1>
 
-      <motion.p
-        initial={{ opacity: 0, y: 16 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.7, delay: 0.7 }}
-        className="mx-auto mt-8 max-w-xl text-center text-base text-muted md:text-lg"
-      >
-        {hero.description}
-      </motion.p>
+          <motion.p
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, delay: 0.7 }}
+            className="mt-8 max-w-xl text-left text-base text-muted md:text-lg"
+          >
+            {hero.description}
+          </motion.p>
 
-      <motion.div
-        initial={{ opacity: 0, y: 16 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.7, delay: 0.85 }}
-        className="mt-10 flex flex-col items-center gap-4"
-      >
-        <Button href="#consultoria">{hero.cta}</Button>
-      </motion.div>
-
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 1, delay: 1.2 }}
-        className="absolute bottom-10 right-6 flex items-center gap-3 text-xs uppercase tracking-widest text-muted md:right-10"
-      >
-        <span className="relative flex h-10 w-6 items-start justify-center rounded-full border border-current/30 p-1.5">
-          <motion.span
-            animate={{ y: [0, 14, 0] }}
-            transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
-            className="h-1.5 w-1.5 rounded-full bg-accent"
-          />
-        </span>
-        Scroll
-      </motion.div>
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, delay: 0.85 }}
+            className="mt-10 flex flex-col items-start gap-4"
+          >
+            <Button href="#consultoria">{hero.cta}</Button>
+          </motion.div>
+        </div>
+      </div>
     </>
   );
 }

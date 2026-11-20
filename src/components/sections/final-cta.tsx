@@ -6,14 +6,14 @@ import { finalCta } from "@/lib/content";
 
 export function FinalCta() {
   return (
-    <Section theme="dark" className="relative overflow-hidden px-6 py-32 text-center md:px-10 md:py-40">
+    <Section theme="light" className="relative overflow-hidden px-6 py-32 text-center md:px-10 md:py-40">
       <div className="grid-floor absolute inset-0 -z-10 opacity-60" />
       <div className="mx-auto flex max-w-3xl flex-col items-center">
         <Reveal>
           <FadeHeading
             as="h2"
             lines={[finalCta.heading]}
-            dot
+            accentWords={["oportunidades"]}
             className="text-4xl md:text-6xl"
           />
         </Reveal>

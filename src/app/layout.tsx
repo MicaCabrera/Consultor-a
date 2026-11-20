@@ -3,6 +3,7 @@ import { DM_Sans, Instrument_Serif } from "next/font/google";
 import "./globals.css";
 import { Cursor } from "@/components/cursor";
 import { RollTextController } from "@/components/roll-text-controller";
+import { MicaChat } from "@/components/mica-chat";
 
 const dmSans = DM_Sans({
   variable: "--font-dm-sans",
@@ -33,6 +34,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <Cursor />
         <RollTextController />
         {children}
+        <MicaChat />
       </body>
     </html>
   );

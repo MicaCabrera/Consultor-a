@@ -6,9 +6,38 @@ import { cn } from "@/lib/utils";
 import { nav } from "@/lib/content";
 import { useNavTheme } from "@/components/section-theme";
 import { RollText } from "@/components/roll-text";
+import { useSafeReducedMotion } from "@/lib/use-reduced-motion";
 
 export function Nav() {
   const [open, setOpen] = useState(false);
+  // Inline menu of wide screens (≥1024px), unfolding to the left of MENÚ.
+  const [inlineOpen, setInlineOpen] = useState(false);
+  const reduce = useSafeReducedMotion();
+
+  // MENÚ: the links fit in one row only on wide screens; below that, the
+  // full-screen menu.
+  const onMenu = () => {
+    if (window.matchMedia("(min-width: 1024px)").matches) setInlineOpen((v) => !v);
+    else setOpen(true);
+  };
+
+  // Inline menu: Esc closes it; it also closes if the screen gets narrower.
+  useEffect(() => {
+    if (!inlineOpen) return;
+    const mq = window.matchMedia("(min-width: 1024px)");
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setInlineOpen(false);
+    };
+    const onChange = () => {
+      if (!mq.matches) setInlineOpen(false);
+    };
+    window.addEventListener("keydown", onKey);
+    mq.addEventListener("change", onChange);
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      mq.removeEventListener("change", onChange);
+    };
+  }, [inlineOpen]);
 
   // While the full-screen menu is open: no page scroll behind it, Esc closes it.
   useEffect(() => {
@@ -43,30 +72,47 @@ export function Nav() {
           <span className="mr-[0.3em] text-accent">⊹</span>CVS
         </a>
 
-        <nav className="hidden items-center gap-8 text-[13px] font-medium uppercase tracking-wider lg:flex">
-          {nav.map((item) => (
-            <a
-              key={item.href}
-              href={item.href}
-              data-cursor="link"
-              className="group relative py-1"
-            >
-              {item.label}
-              <span className="absolute inset-x-0 -bottom-0.5 h-px origin-left scale-x-0 bg-accent transition-transform duration-300 group-hover:scale-x-100" />
-            </a>
-          ))}
-        </nav>
-
-        <div className="flex items-center gap-6">
-          <a
-            href="#consultoria"
-            data-cursor="link"
-            className="relative -my-3 hidden py-3 text-[13px] font-semibold uppercase tracking-wider md:block"
+        {/* Right: MENÚ, with the links unfolding to its left */}
+        <div className="relative flex items-center gap-6">
+          {/* Inline menu (≥1024px). Absolutely placed to the left of MENÚ, so
+              opening it never moves or resizes anything else. */}
+          <motion.nav
+            id="nav-inline"
+            aria-label="Secciones"
+            aria-hidden={!inlineOpen}
+            inert={!inlineOpen}
+            initial={false}
+            animate={{ clipPath: inlineOpen ? "inset(0 0 0 0%)" : "inset(0 0 0 100%)" }}
+            transition={{ duration: reduce ? 0 : 0.7, ease: [0.76, 0, 0.24, 1] }}
+            className="absolute right-full top-1/2 mr-8 hidden -translate-y-1/2 items-center gap-6 whitespace-nowrap text-[13px] font-medium uppercase tracking-wider lg:flex xl:gap-8"
           >
-            <RollText text="Reservar" />
-            {/* Underline drawn as a line: text-decoration doesn't reach the split letters */}
-            <span aria-hidden className="absolute inset-x-0 bottom-[7px] h-0.5 bg-accent" />
-          </a>
+            {nav.map((item, i) => {
+              // Unfolds from the right: the link nearest MENÚ comes in first
+              // and, when closing, leaves last.
+              const fromRight = nav.length - 1 - i;
+              return (
+                <motion.a
+                  key={item.href}
+                  href={item.href}
+                  data-cursor="link"
+                  onClick={() => setInlineOpen(false)}
+                  initial={false}
+                  animate={inlineOpen ? { x: 0, opacity: 1 } : { x: 24, opacity: 0 }}
+                  transition={{
+                    duration: reduce ? 0 : 0.5,
+                    ease: [0.16, 1, 0.3, 1],
+                    delay: reduce ? 0 : (inlineOpen ? fromRight : i) * 0.05,
+                  }}
+                  className="group relative py-1"
+                >
+                  {item.label}
+                  <span className="absolute inset-x-0 -bottom-0.5 h-px origin-left scale-x-0 bg-accent transition-transform duration-300 group-hover:scale-x-100" />
+                </motion.a>
+              );
+            })}
+          </motion.nav>
+
+          {/* Mobile: icon only, opens the full-screen menu */}
           <button
             type="button"
             data-cursor="link"
@@ -77,14 +123,33 @@ export function Nav() {
             <span className="h-px w-6 bg-current" />
             <span className="h-px w-6 bg-current" />
           </button>
+
+          {/* MENÚ (≥768px): inline menu on wide screens, full-screen below 1024px */}
           <button
             type="button"
             data-cursor="link"
-            onClick={() => setOpen(true)}
-            className="-my-3 hidden py-3 text-[13px] font-semibold uppercase tracking-wider md:block"
+            onClick={onMenu}
+            aria-expanded={inlineOpen}
+            aria-controls="nav-inline"
+            className="-my-3 hidden items-center gap-3 py-3 text-[13px] font-semibold uppercase tracking-wider md:flex"
           >
             <RollText text="Menú" />
+            <span aria-hidden className="relative block h-3 w-6">
+              <motion.span
+                initial={false}
+                animate={inlineOpen ? { top: 5.5, rotate: 45, width: 20 } : { top: 2, rotate: 0, width: 24 }}
+                transition={{ duration: reduce ? 0 : 0.35, ease: [0.76, 0, 0.24, 1] }}
+                className="absolute right-0 h-px bg-current"
+              />
+              <motion.span
+                initial={false}
+                animate={inlineOpen ? { top: 5.5, rotate: -45, width: 20 } : { top: 9, rotate: 0, width: 16 }}
+                transition={{ duration: reduce ? 0 : 0.35, ease: [0.76, 0, 0.24, 1] }}
+                className="absolute right-0 h-px bg-current"
+              />
+            </span>
           </button>
+
         </div>
       </header>
 

@@ -6,6 +6,7 @@ import { useNavThemeOverride } from "@/components/section-theme";
 import { Hero, HeroContent, HERO_CLASS } from "@/components/sections/hero";
 import { Intro } from "@/components/sections/intro";
 import { cn } from "@/lib/utils";
+import { HeroSmokeMirror } from "@/components/ui/hero-smoke";
 
 /**
  * Hero → «Sobre mí» transition: the hero stays pinned and splits into
@@ -31,6 +32,7 @@ export function HeroShutter() {
           data-theme="dark"
           className={cn(HERO_CLASS, "h-full bg-bg-dark text-fg-dark")}
         >
+          <HeroSmokeMirror />
           <HeroContent />
         </div>
       }
