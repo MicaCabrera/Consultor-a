@@ -8,7 +8,7 @@ import { HeroSmoke } from "@/components/ui/hero-smoke";
 
 /** Layout classes of the hero section, shared with its visual copies. */
 export const HERO_CLASS =
-  "relative isolate flex min-h-screen flex-col justify-center overflow-hidden px-6 pt-32 pb-20 md:px-10";
+  "relative isolate flex min-h-svh flex-col justify-center overflow-hidden px-6 pt-32 pb-20 md:px-10";
 
 export function Hero() {
   return (
@@ -35,7 +35,7 @@ export function HeroContent() {
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
-            className="max-w-[15ch] text-left text-[11.5vw] font-medium leading-[0.9] tracking-tight text-fg-dark md:text-[5.6vw]"
+            className="max-w-[15ch] text-left text-[13vw] font-medium leading-[0.9] tracking-tight text-fg-dark md:text-[9vw] lg:text-[6.4vw]"
           >
             {hero.headingPrefix}{" "}
             <span

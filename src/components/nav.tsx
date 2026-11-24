@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { cn } from "@/lib/utils";
-import { nav } from "@/lib/content";
+import { nav, footer } from "@/lib/content";
 import { useNavTheme } from "@/components/section-theme";
 import { RollText } from "@/components/roll-text";
 import { useSafeReducedMotion } from "@/lib/use-reduced-motion";
@@ -56,12 +56,25 @@ export function Nav() {
   const theme = useNavTheme();
   const isDark = theme === "dark";
 
+  // Phones: once the page moves, the bar gets a translucent backdrop so the
+  // logo and menu icon never sit on top of running text. Desktop keeps the
+  // bare bar (the classes below are max-md only).
+  const [scrolled, setScrolled] = useState(false);
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 24);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
   return (
     <>
       <header
         className={cn(
-          "fixed inset-x-0 top-0 z-50 flex items-center justify-between px-6 py-5 transition-colors duration-500 md:px-10",
-          isDark ? "text-fg-dark" : "text-fg-light"
+          "fixed inset-x-0 top-0 z-50 flex items-center justify-between px-6 py-5 transition-[color,background-color] duration-500 md:px-10",
+          isDark ? "text-fg-dark" : "text-fg-light",
+          scrolled && "max-md:py-4 max-md:backdrop-blur-md",
+          scrolled && (isDark ? "max-md:bg-bg-dark/70" : "max-md:bg-bg-light/75")
         )}
       >
         <a
@@ -117,7 +130,7 @@ export function Nav() {
             type="button"
             data-cursor="link"
             onClick={() => setOpen(true)}
-            className="relative z-50 flex h-9 w-9 flex-col items-center justify-center gap-[5px] md:hidden"
+            className="relative z-50 -mr-2 flex h-11 w-11 flex-col items-center justify-center gap-[5px] md:hidden"
             aria-label="Abrir menú"
           >
             <span className="h-px w-6 bg-current" />
@@ -160,7 +173,7 @@ export function Nav() {
             animate={{ clipPath: "inset(0 0 0% 0)" }}
             exit={{ clipPath: "inset(0 0 100% 0)" }}
             transition={{ duration: 0.5, ease: [0.76, 0, 0.24, 1] }}
-            className="fixed inset-0 z-[60] flex flex-col bg-bg-dark text-fg-dark"
+            className="fixed inset-0 z-[80] flex flex-col bg-bg-dark text-fg-dark"
           >
             <div className="flex items-center justify-between px-6 py-5 md:px-10">
               <span className="font-semibold tracking-tight text-lg">
@@ -199,7 +212,9 @@ export function Nav() {
             </div>
 
             <div className="flex flex-col gap-1 border-t border-current/10 px-6 py-6 text-sm text-muted md:px-10">
-              <span>hola@cesarvidalscasso.com</span>
+              <a href={`mailto:${footer.email}`} data-cursor="link" className="w-fit hover:text-accent">
+                {footer.email}
+              </a>
               <span>Lunes a viernes · 9 a 12 h</span>
             </div>
           </motion.div>

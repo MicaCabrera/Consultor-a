@@ -6,14 +6,12 @@ import { finalCta } from "@/lib/content";
 
 export function FinalCta() {
   return (
-    <Section theme="light" className="relative overflow-hidden px-6 py-32 text-center md:px-10 md:py-40">
-      <div className="grid-floor absolute inset-0 -z-10 opacity-60" />
+    <Section theme="dark" mist className="relative overflow-hidden px-6 py-32 text-center md:px-10 md:py-40">
       <div className="mx-auto flex max-w-3xl flex-col items-center">
         <Reveal>
           <FadeHeading
             as="h2"
             lines={[finalCta.heading]}
-            accentWords={["oportunidades"]}
             className="text-4xl md:text-6xl"
           />
         </Reveal>
@@ -22,9 +20,6 @@ export function FinalCta() {
         </Reveal>
         <Reveal delay={0.25} className="mt-10">
           <Button href="#consultoria">{finalCta.cta}</Button>
-        </Reveal>
-        <Reveal delay={0.35}>
-          <p className="mt-6 text-sm text-muted">{finalCta.note}</p>
         </Reveal>
       </div>
     </Section>

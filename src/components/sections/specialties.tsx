@@ -130,7 +130,7 @@ export function Specialties() {
   const total = specialties.items.length;
 
   return (
-    <Section id="especialidades" theme="dark" className="px-6 py-28 md:px-10 md:py-36">
+    <Section id="especialidades" theme="dark" mist className="px-6 py-28 md:px-10 md:py-36">
       <div className="mx-auto grid max-w-7xl grid-cols-1 lg:grid-cols-12 lg:gap-x-[30px]">
         <aside
           aria-hidden

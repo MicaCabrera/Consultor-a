@@ -18,7 +18,7 @@ export const hero = {
 
 export const intro = {
   heading: "La tecnología importa cuando genera resultados",
-  name: { prefix: "Soy", highlight: "César Vidal Scasso", suffix: "." },
+  name: { prefix: "Soy", highlight: "César Vidal Scasso", suffix: "" },
   photo: { src: "/about/foto.jpeg", alt: "César Vidal Scasso en una reunión de trabajo con su equipo" },
   paragraphs: [
     "Trabajo en la intersección entre tecnología, innovación y desarrollo de negocios, ayudando a identificar oportunidades y convertir ideas en proyectos concretos.",
@@ -62,22 +62,11 @@ export const specialties = {
 };
 
 export const consulting = {
-  eyebrow: "Consultoría individual",
   heading: "Una hora para pensar mejor tus próximos pasos.",
   description:
     "Un espacio de trabajo personalizado para analizar un desafío concreto de tu empresa, proyecto o actividad profesional. Durante la sesión vamos a trabajar sobre tu situación actual, identificar oportunidades y evaluar posibles soluciones.",
-  includesTitle: "¿Qué incluye?",
-  includes: [
-    "Análisis previo de tu consulta y contexto.",
-    "Reunión individual de 60 minutos.",
-    "Evaluación de oportunidades y alternativas.",
-    "Recomendaciones estratégicas.",
-    "Próximos pasos para avanzar.",
-  ],
   price: "USD 120",
   priceNote: "Inversión de lanzamiento",
-  priceFootnote:
-    "El equivalente en pesos argentinos se informa al momento de la reserva.",
   cta: "Reservar mi consultoría",
 };
 
@@ -87,31 +76,26 @@ export const audience = {
   items: [
     {
       title: "Empresas",
-      image: "/audience/empresas.jpg",
       description:
         "Empresas y pymes que buscan innovar, optimizar procesos y encontrar nuevas oportunidades de crecimiento.",
     },
     {
       title: "Liderazgo",
-      image: "/audience/liderazgo.jpg",
       description:
         "Directores y gerentes que necesitan evaluar nuevas tecnologías y tomar decisiones estratégicas para sus organizaciones.",
     },
     {
       title: "Equipos",
-      image: "/audience/equipos.jpg",
       description:
         "Organizaciones que buscan incorporar gamificación, automatización y nuevas herramientas para transformar sus procesos.",
     },
     {
       title: "Startups",
-      image: "/audience/startups.jpg",
       description:
         "Emprendedores que necesitan validar ideas, desarrollar productos innovadores y construir modelos de negocio escalables.",
     },
     {
       title: "Profesionales",
-      image: "/audience/profesionales.jpg",
       description:
         "Personas que buscan comprender las tendencias tecnológicas y aprovechar nuevas oportunidades de innovación.",
     },
@@ -173,7 +157,6 @@ export const finalCta = {
   description:
     "Analicemos juntos cómo la tecnología puede ayudarte a resolver desafíos y desarrollar nuevas oportunidades para tu negocio.",
   cta: "Reservar una consultoría",
-  note: "Una conversación estratégica puede ser el primer paso para transformar una idea en acción.",
 };
 
 export const footer = {
@@ -187,9 +170,9 @@ export const footer = {
     { label: "Contacto", href: "#contacto" },
   ],
   social: [
-    { label: "LinkedIn", href: "#" },
-    { label: "Instagram", href: "#" },
+    { label: "LinkedIn", href: "https://www.linkedin.com/in/cesarvidalok/" },
+    { label: "Instagram", href: "https://www.instagram.com/cesarvidalok/" },
   ],
-  email: "hola@cesarvidalscasso.com",
+  email: "cesarvidalscasso@gmail.com",
   copyright: "© 2026 César Vidal Scasso. Todos los derechos reservados.",
 };

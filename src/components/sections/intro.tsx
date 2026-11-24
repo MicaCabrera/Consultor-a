@@ -89,6 +89,81 @@ function ScrollReveal({
   );
 }
 
+/**
+ * Paragraphs that "read themselves" on scroll, line by line: every line starts
+ * grey and turns fully dark in turn — all of the first paragraph, then the
+ * second, then the third — driven by one scroll progress over the whole block.
+ * Lines are measured from the rendered layout, so they follow the real
+ * wrapping at every width. Opacity is written straight to each word, with no
+ * re-render while scrolling.
+ */
+const INK_FROM = 0.22;
+
+function ScrollInkText({ paragraphs, className }: { paragraphs: string[]; className?: string }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({ target: ref, offset: ["start 0.8", "end 0.55"] });
+  const reduce = useSafeReducedMotion();
+  // Each word with the index of its line (across all paragraphs).
+  const layout = useRef<{ words: { el: HTMLElement; line: number }[]; total: number }>({ words: [], total: 1 });
+
+  const paint = useCallback(() => {
+    const { words, total } = layout.current;
+    const p = scrollYProgress.get() * total; // progress in "lines"
+    for (const { el, line } of words) {
+      const t = clamp01(p - line);
+      el.style.opacity = String(INK_FROM + (1 - INK_FROM) * t);
+    }
+  }, [scrollYProgress]);
+
+  useMotionValueEvent(scrollYProgress, "change", paint);
+
+  useEffect(() => {
+    const root = ref.current;
+    if (!root || reduce) return;
+    const measure = () => {
+      const words: { el: HTMLElement; line: number }[] = [];
+      let line = -1;
+      root.querySelectorAll<HTMLElement>("[data-ink-p]").forEach((p) => {
+        let lastTop = Number.NEGATIVE_INFINITY;
+        p.querySelectorAll<HTMLElement>("[data-ink-w]").forEach((el) => {
+          if (Math.abs(el.offsetTop - lastTop) > 4) {
+            line += 1;
+            lastTop = el.offsetTop;
+          }
+          words.push({ el, line });
+        });
+      });
+      layout.current = { words, total: Math.max(1, line + 1) };
+      paint();
+    };
+    const ro = new ResizeObserver(measure); // also fires once right away
+    ro.observe(root);
+    return () => ro.disconnect();
+  }, [reduce, paint]);
+
+  return (
+    <div ref={ref} className={className}>
+      {paragraphs.map((text, pi) =>
+        reduce ? (
+          <p key={pi} className="text-fg">{text}</p>
+        ) : (
+          <p key={pi} data-ink-p className="text-fg">
+            <span className="sr-only">{text}</span>
+            <span aria-hidden>
+              {text.split(" ").map((word, i, words) => (
+                <span key={i} data-ink-w style={{ opacity: INK_FROM }}>
+                  {word}
+                  {i < words.length - 1 ? " " : ""}
+                </span>
+              ))}
+            </span>
+          </p>
+        )
+      )}
+    </div>
+  );
+}
+
 function Title({ animate }: { animate: boolean }) {
   const words = intro.heading.split(" ");
   return (
@@ -114,26 +189,19 @@ function Title({ animate }: { animate: boolean }) {
 
 function Statement() {
   return (
-    <div className="mx-auto max-w-3xl px-6 pb-28 text-center md:px-10 md:pb-40">
+    // Pulled up into the end of the pinned track, which otherwise leaves a tall
+    // empty gap below the photo on its way out.
+    <div className="relative mx-auto -mt-[25svh] max-w-3xl px-6 pb-28 text-center md:px-10 md:pb-40">
       <ScrollReveal>
         <h3 className="text-4xl font-medium leading-[1.05] tracking-tight md:text-6xl">
-          {intro.name.prefix}{" "}
-          {/* Same treatment as the hero's highlighted words */}
-          <span className="text-accent italic" style={{ fontFamily: "var(--font-accent-serif)" }}>
-            {intro.name.highlight}
-          </span>
+          {intro.name.prefix} {intro.name.highlight}
           {intro.name.suffix}
         </h3>
       </ScrollReveal>
-      <div className="mt-10 flex flex-col gap-7 md:mt-14 md:gap-9">
-        {intro.paragraphs.map((paragraph, i) => (
-          <ScrollReveal key={i}>
-            <p className="text-lg leading-relaxed text-muted md:text-2xl md:leading-[1.5]">
-              {paragraph}
-            </p>
-          </ScrollReveal>
-        ))}
-      </div>
+      <ScrollInkText
+        paragraphs={intro.paragraphs}
+        className="mt-10 flex flex-col gap-7 text-lg leading-relaxed md:mt-14 md:gap-9 md:text-2xl md:leading-[1.5]"
+      />
     </div>
   );
 }

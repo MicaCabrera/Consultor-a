@@ -15,7 +15,7 @@ export function Process() {
             <FadeHeading
               as="h2"
               lines={[process.heading]}
-              className="max-w-3xl text-[clamp(2rem,10vw,2.5rem)] md:text-5xl lg:text-[4rem]"
+              className="max-w-3xl text-[clamp(2rem,10vw,2.5rem)] max-md:leading-[1.02] md:text-5xl lg:text-[4rem]"
             />
           </Reveal>
         }

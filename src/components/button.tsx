@@ -1,5 +1,4 @@
 import { cn } from "@/lib/utils";
-import { RollText } from "@/components/roll-text";
 
 export function Button({
   href,
@@ -17,12 +16,16 @@ export function Button({
       href={href}
       data-cursor="link"
       className={cn(
-        "btn inline-flex items-center justify-center px-5 py-2.5 text-sm font-medium tracking-tight",
+        "btn relative inline-flex items-center justify-center px-5 py-2.5 text-sm font-medium tracking-tight",
         variant === "solid" ? "btn-primary" : "btn-secondary",
         className
       )}
     >
-      {typeof children === "string" ? <RollText text={children} /> : children}
+      {/* Hover: a short line runs once around the border (see .btn-trace) */}
+      <svg aria-hidden className="btn-trace" width="100%" height="100%">
+        <rect pathLength={100} />
+      </svg>
+      <span className="relative">{children}</span>
     </a>
   );
 }

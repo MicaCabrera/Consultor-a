@@ -1,8 +1,8 @@
 /**
- * Mica, the site's virtual assistant: every message and path lives here.
- * All answers are written in advance — no AI, no external API. Mica informs
+ * Avi, the site's virtual assistant: every message and path lives here.
+ * All answers are written in advance — no AI, no external API. Avi informs
  * and hands the visitor over to WhatsApp; she never books, schedules or
- * handles payments. To change what Mica says, edit this file only.
+ * handles payments. To change what Avi says, edit this file only.
  */
 
 const WHATSAPP_NUMBER = "5491123136781";
@@ -88,7 +88,7 @@ const ASK_WHATSAPP: Choice = { label: "Consultar por WhatsApp.", whatsapp: WA.ge
 export const STEPS: Record<StepId, Step> = {
   welcome: {
     say: [
-      "¡Hola! Soy Mica, la asistente virtual de César.",
+      "¡Hola! Soy Avi, la asistente virtual de César.",
       "Estoy acá para ayudarte a conocer sus consultorías, entender cómo pueden acompañarte y encontrar la mejor manera de avanzar.",
       "¿Qué te gustaría saber?",
     ],
@@ -255,7 +255,7 @@ export const STEPS: Record<StepId, Step> = {
 
 /**
  * Free text → a step, only for clear keywords of the paths above. Anything
- * else gets the fallback (WhatsApp); Mica never improvises an answer.
+ * else gets the fallback (WhatsApp); Avi never improvises an answer.
  */
 const KEYWORDS: [RegExp, StepId][] = [
   [/\b(precio|precios|cuesta|cuestan|costo|costos|cuanto sale|valor|tarifa|usd|dolares)\b/, "precio"],

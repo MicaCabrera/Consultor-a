@@ -3,7 +3,7 @@ import { footer } from "@/lib/content";
 
 export function Footer() {
   return (
-    <Section id="contacto" theme="dark" className="border-t border-current/10 px-6 py-16 md:px-10">
+    <Section id="contacto" theme="dark" mist className="border-t border-current/10 px-6 pt-16 pb-28 md:px-10 md:py-16">
       <div className="mx-auto flex max-w-6xl flex-col gap-10 md:flex-row md:items-start md:justify-between">
         <div>
           <p className="text-lg font-semibold tracking-tight">
@@ -27,7 +27,14 @@ export function Footer() {
           </a>
           <div className="flex gap-4">
             {footer.social.map((item) => (
-              <a key={item.label} href={item.href} data-cursor="link" className="-my-2.5 py-2.5 hover:text-accent">
+              <a
+                key={item.label}
+                href={item.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                data-cursor="link"
+                className="-my-2.5 py-2.5 hover:text-accent"
+              >
                 {item.label}
               </a>
             ))}

@@ -4,7 +4,7 @@ import { useEffect, useRef } from "react";
 import { useSafeReducedMotion } from "@/lib/use-reduced-motion";
 
 /**
- * Mica's launcher animation: "Glow IA Animation" (public/mica-glow.json,
+ * Avi's launcher animation: "Glow IA Animation" (public/mica-glow.json,
  * extracted from the project's .lottie file, with its glow images recoloured
  * to the site green and embedded). Drawn by lottie-web's light build, loaded
  * lazily so it never weighs on the first page load. With reduced motion it

@@ -93,17 +93,14 @@ body {
 }
 
 /* Buttons: square, no glow. On dark sections: transparent with a thin white
-   border. On light sections: solid accent green. The text roll on hover is
-   the interaction. */
+   border. On light sections: white with a
+   faint dark border. On hover a line traces the
+   border (.btn-trace). */
 .btn {
   background: transparent;
   border: 1px solid rgba(245, 246, 244, 0.55);
   color: var(--fg-dark);
-  transition: border-color 200ms ease, background-color 200ms ease;
-}
-
-.btn:hover {
-  border-color: var(--fg-dark);
+  transition: border-color 200ms ease, background-color 900ms ease-in-out;
 }
 
 .btn:focus-visible {
@@ -112,14 +109,14 @@ body {
 }
 
 [data-theme="light"] .btn {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: #06100c;
+  background: #ffffff;
+  border-color: rgba(10, 11, 10, 0.22);
+  color: #0a0b0a;
 }
 
 [data-theme="light"] .btn:hover {
-  background: #5cf0c4;
-  border-color: #5cf0c4;
+  background: #ffffff;
+  border-color: rgba(10, 11, 10, 0.22);
 }
 
 /* Comes after the light rule so a dark block inside a light section wins. */
@@ -129,8 +126,54 @@ body {
   color: var(--fg-dark);
 }
 
+/*
+ * Border trace (after Vitor Siqueira, "100 days css Button N° 045", MIT):
+ * a line about a third of the perimeter long sits hidden before the start;
+ * on hover it runs once around the whole border and leaves, and on hover-out
+ * it runs back. pathLength=100 makes it work at any button size.
+ */
+.btn-trace {
+  position: absolute;
+  inset: -1px;
+  width: calc(100% + 2px);
+  height: calc(100% + 2px);
+  overflow: visible;
+  pointer-events: none;
+}
+
+.btn-trace rect {
+  x: 0.5px;
+  y: 0.5px;
+  width: calc(100% - 1px);
+  height: calc(100% - 1px);
+  fill: none;
+  stroke: var(--fg-dark);
+  stroke-width: 1px;
+  stroke-dasharray: 31 100;
+  stroke-dashoffset: 31;
+  transition: stroke-dashoffset 900ms ease-in-out;
+}
+
+.btn:hover .btn-trace rect {
+  stroke-dashoffset: -100;
+}
+
+/* The border stays as is on hover, so the white trace stands out. */
+.btn:hover,
 [data-theme="dark"] .btn:hover {
-  border-color: var(--fg-dark);
+  background: rgba(48, 230, 176, 0.08);
+}
+
+/* On light sections: white button, black line. */
+[data-theme="light"] .btn-trace rect {
+  stroke: #0a0b0a;
+  stroke-width: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btn-trace {
+    display: none;
+  }
 }
 
 .grid-floor {

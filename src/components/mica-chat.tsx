@@ -21,13 +21,13 @@ type Message =
   | { id: number; from: "visitor"; text: string };
 
 const EASE = [0.16, 1, 0.3, 1] as const;
-// Pause before Mica answers, so replies arrive one at a time.
+// Pause before Avi answers, so replies arrive one at a time.
 const TYPING_MS = 650;
 
 const START: Message[] = [{ id: 0, from: "mica", step: "welcome" }];
 
 /**
- * Floating assistant "Mica": a button fixed bottom-right that opens the chat.
+ * Floating assistant "Avi": a button fixed bottom-right that opens the chat.
  * The conversation lives in this component's state, so closing and reopening
  * the window keeps it until the visitor restarts it (or leaves the page).
  */
@@ -118,7 +118,7 @@ export function MicaChat() {
             ref={launcherRef}
             type="button"
             data-cursor="link"
-            aria-label="Abrir chat con Mica, asistente virtual"
+            aria-label="Abrir chat con Avi, asistente virtual"
             aria-expanded={false}
             aria-controls={panelId}
             onClick={() => setOpen(true)}
@@ -130,7 +130,7 @@ export function MicaChat() {
               ease: EASE,
               delay: reduce ? 0 : 0.2,
             }}
-            className="group fixed right-4 bottom-4 z-[70] flex h-20 w-20 items-center justify-center md:right-6 md:bottom-6"
+            className="group fixed right-4 bottom-4 z-[70] flex h-16 w-16 items-center justify-center md:right-6 md:bottom-6 md:h-20 md:w-20"
           >
             <MicaAnimation className="h-full w-full transition-transform duration-300 group-hover:scale-110" />
           </motion.button>
@@ -143,7 +143,7 @@ export function MicaChat() {
           <motion.div
             id={panelId}
             role="dialog"
-            aria-label="Chat con Mica, asistente virtual"
+            aria-label="Chat con Avi, asistente virtual"
             initial={reduce ? { opacity: 0 } : { opacity: 0, y: 24, scale: 0.98 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={reduce ? { opacity: 0 } : { opacity: 0, y: 24, scale: 0.98 }}
@@ -158,7 +158,7 @@ export function MicaChat() {
             {/* Header */}
             <div className="flex items-center gap-3 bg-white/[0.04] px-5 py-4">
               <div className="min-w-0 flex-1 leading-tight">
-                <p className="font-semibold">Mica</p>
+                <p className="font-semibold">Avi</p>
                 <p className="flex items-center gap-1.5 text-xs whitespace-nowrap text-muted-dark">
                   Asistente virtual
                   <span aria-hidden>·</span>
@@ -216,7 +216,7 @@ export function MicaChat() {
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
                     className="flex w-fit items-center gap-1 bg-white/[0.06] px-4 py-3"
-                    aria-label="Mica está escribiendo"
+                    aria-label="Avi está escribiendo"
                   >
                     {[0, 1, 2].map((d) => (
                       <motion.span
@@ -266,7 +266,7 @@ export function MicaChat() {
   );
 }
 
-/** One answer from Mica: its text and, if it is the latest one, its buttons. */
+/** One answer from Avi: its text and, if it is the latest one, its buttons. */
 function MicaTurn({
   step,
   asked,
