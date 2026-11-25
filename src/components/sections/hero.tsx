@@ -3,8 +3,9 @@
 import { motion } from "framer-motion";
 import { Section } from "@/components/section";
 import { Button } from "@/components/button";
+import { FadeHeading } from "@/components/fade-heading";
 import { hero } from "@/lib/content";
-import { HeroSmoke } from "@/components/ui/hero-smoke";
+import { HeroVideo } from "@/components/ui/hero-video";
 
 /** Layout classes of the hero section, shared with its visual copies. */
 export const HERO_CLASS =
@@ -13,7 +14,7 @@ export const HERO_CLASS =
 export function Hero() {
   return (
     <Section id="inicio" theme="dark" className={HERO_CLASS}>
-      <HeroSmoke />
+      <HeroVideo />
       <HeroContent />
     </Section>
   );
@@ -31,21 +32,15 @@ export function HeroContent() {
           cancels the section padding, which that column already includes. */}
       <div className="-mx-6 md:-mx-10">
         <div className="mx-auto w-full max-w-6xl px-6 md:px-10">
-          <motion.h1
-            initial={{ opacity: 0, y: 24 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
+          {/* Lines rise from their masks on load. Non-breaking spaces keep
+              "lo que viene?" together on one line, as before. */}
+          <FadeHeading
+            as="h1"
+            trigger="mount"
+            delay={0.15}
+            lines={[`${hero.headingPrefix} ${hero.headingHighlight.replace(/ /g, " ")}${hero.headingSuffix}`]}
             className="max-w-[15ch] text-left text-[13vw] font-medium leading-[0.9] tracking-tight text-fg-dark md:text-[9vw] lg:text-[6.4vw]"
-          >
-            {hero.headingPrefix}{" "}
-            <span
-              className="whitespace-nowrap italic"
-              style={{ fontFamily: "var(--font-accent-serif)" }}
-            >
-              {hero.headingHighlight}
-            </span>
-            {hero.headingSuffix}
-          </motion.h1>
+          />
 
           <motion.p
             initial={{ opacity: 0, y: 16 }}

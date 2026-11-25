@@ -8,6 +8,7 @@ import { Process } from "@/components/sections/process";
 import { FinalCta } from "@/components/sections/final-cta";
 import { Footer } from "@/components/sections/footer";
 import { MistBackground } from "@/components/mist-background";
+import { ClipReveal, CurtainReveal } from "@/components/curtain-reveal";
 
 export default function Home() {
   return (
@@ -18,9 +19,10 @@ export default function Home() {
       <main>
         <HeroShutter />
         <Specialties />
-        <Consulting />
-        <Audience />
-        <Process />
+        {/* «Consultoría» scrolls away and uncovers «¿Para quién es?» behind it */}
+        <CurtainReveal cover={<Consulting />} revealed={<Audience />} />
+        {/* «¿Para quién es?» (see-through) scrolls away and uncovers «Cómo funciona» */}
+        <ClipReveal anchorId="como-funciona" revealed={<Process id={null} />} />
         <FinalCta />
       </main>
       <Footer />

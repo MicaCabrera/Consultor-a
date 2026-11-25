@@ -119,7 +119,8 @@ export function Nav() {
                   className="group relative py-1"
                 >
                   {item.label}
-                  <span className="absolute inset-x-0 -bottom-0.5 h-px origin-left scale-x-0 bg-accent transition-transform duration-300 group-hover:scale-x-100" />
+                  {/* Hover: a thin line sweeps under the link and goes (.nav-underline) */}
+                  <span aria-hidden className="nav-underline absolute inset-x-0 bottom-0.5 h-px bg-current" />
                 </motion.a>
               );
             })}
@@ -204,8 +205,10 @@ export function Nav() {
                   <span className="text-accent opacity-0 transition-opacity group-hover:opacity-100">
                     ⊹
                   </span>
-                  <span className="transition-colors group-hover:text-accent">
+                  <span className="relative transition-colors group-hover:text-accent">
                     {item.label}
+                    {/* Hover: a thin white line sweeps under the link and goes */}
+                    <span aria-hidden className="nav-underline absolute inset-x-0 bottom-[0.06em] h-px bg-white" />
                   </span>
                 </motion.a>
               ))}

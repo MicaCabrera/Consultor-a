@@ -20,13 +20,11 @@ export function Consulting() {
   return (
     <Section id="consultoria" theme="light" className="px-6 py-28 md:px-10 md:py-36">
       <div className="mx-auto max-w-6xl">
-        <Reveal>
-          <FadeHeading
-            as="h2"
-            lines={[consulting.heading]}
-            className="max-w-4xl text-5xl md:text-6xl lg:text-[5rem]"
-          />
-        </Reveal>
+        <FadeHeading
+          as="h2"
+          lines={[consulting.heading]}
+          className="max-w-4xl text-5xl md:text-6xl lg:text-[5rem]"
+        />
 
         {/* Description on the left, price on the right: the bottom of the
             number lines up with the last line of the description. */}

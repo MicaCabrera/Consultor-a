@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef, useSyncExternalStore } from "react";
 import Image from "next/image";
 import {
   motion,
@@ -8,7 +8,6 @@ import {
   useMotionValueEvent,
   useScroll,
   useSpring,
-  useTransform,
 } from "framer-motion";
 import { Section } from "@/components/section";
 import { useShutterRevealed } from "@/components/ui/slat-shutter";
@@ -26,20 +25,55 @@ import { cn } from "@/lib/utils";
  *   0.08–0.32  title fades and drifts up
  *   0.06–0.62  photo grows from a square crop to the full 3:2 frame,
  *              travelling to the centre (max ≈50% of the width on desktop)
+ *
+ * Below 1024px (phones, portrait tablets) the photo then rises:
+ *
  *   0.72–1.00  photo starts rising, accelerating until it moves exactly at
  *              scroll speed when the pin releases, so the hand-off to normal
  *              scrolling has no seam
  *
- * The text follows the track in normal flow and fades up, tied to scroll,
- * while the photo is still on its way out.
+ * and the three paragraphs follow the track in normal flow.
+ *
+ * From 1024px the track is longer and, instead of rising, right after the
+ * growth (same scroll distances as above, in vh) the photo slides to the
+ * left half while the text block comes in from the right into the right half. The pin releases once the text is in place, so from
+ * then on both simply scroll away with the page. See WIDE below.
+ *
+ * Cover: once that ends (the photo gone on narrow screens, the text landed on
+ * wide ones), the last screen stays still while «Especialidades» rises over
+ * it at scroll speed. The pinned part gets one extra screen of room that
+ * overflows the section, and the section clips it (see .intro-cover in
+ * globals.css), so nothing shows through «Especialidades», which is
+ * see-through. The page height doesn't change.
  */
 
 const EASE = [0.16, 1, 0.3, 1] as const;
 const RISE_FROM = 0.72;
 
+/**
+ * Wide screens (≥1024px), in vh of scroll from the start of the pin. The first
+ * three match the narrow timing at its 180vh pin (0.06, 0.08 and 0.62 of it),
+ * so the growth looks exactly the same.
+ */
+const WIDE = {
+  growFrom: 10.8,
+  growLen: 100.8, // grow ends at 111.6
+  openLen: 90,
+  fadeFrom: 14.4,
+  fadeLen: 43.2,
+  holdLen: 0, // no pause: the move follows the growth straight away
+  moveLen: 80, // photo to the left half, text in from the right
+  settleLen: 15, // still pinned a little longer, so the smoothing can land
+  coverDelay: 30, // and a little more, before «Especialidades» starts rising
+  pin: 236.6, // = 111.6 + 0 + 80 + 15 + 30
+};
+const WIDE_QUERY = "(min-width: 1024px)";
+
 const clamp01 = (v: number) => Math.min(1, Math.max(0, v));
 const easeInOut = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
 const easeOut = (t: number) => 1 - Math.pow(1 - t, 3);
+// Gentle start and end with no sharp speed peak in the middle.
+const easeInOutSine = (t: number) => -(Math.cos(Math.PI * t) - 1) / 2;
 
 type Geometry = {
   ready: boolean;
@@ -48,121 +82,9 @@ type Geometry = {
   x0: number; // initial offset from the viewport centre
   y0: number;
   rise: number; // scroll length (px) of the rise segment
+  moveX: number; // wide: photo shift that puts it in the left half
+  textFrom: number; // wide: text block start offset, just past the right edge
 };
-
-/** Fades and lifts its children in as they scroll into view. */
-function ScrollReveal({
-  children,
-  className,
-  distance = 40,
-}: {
-  children: React.ReactNode;
-  className?: string;
-  distance?: number;
-}) {
-  const ref = useRef<HTMLDivElement>(null);
-  const raw = useMotionValue(0);
-  const progress = useSpring(raw, { stiffness: 110, damping: 26, mass: 0.5 });
-  const opacity = useTransform(progress, [0, 1], [0, 1]);
-  const y = useTransform(progress, [0, 1], [distance, 0]);
-  const { scrollY } = useScroll();
-
-  const update = useCallback(() => {
-    const el = ref.current;
-    if (!el) return;
-    const vh = window.innerHeight;
-    const top = el.getBoundingClientRect().top;
-    // From 92% down the viewport to 62%: fully in place well before centre.
-    raw.set(clamp01((vh * 0.92 - top) / (vh * 0.3)));
-  }, [raw]);
-
-  useMotionValueEvent(scrollY, "change", update);
-  useEffect(update, [update]);
-
-  const reduce = useSafeReducedMotion();
-  if (reduce) return <div className={className}>{children}</div>;
-
-  return (
-    <motion.div ref={ref} style={{ opacity, y }} className={className}>
-      {children}
-    </motion.div>
-  );
-}
-
-/**
- * Paragraphs that "read themselves" on scroll, line by line: every line starts
- * grey and turns fully dark in turn — all of the first paragraph, then the
- * second, then the third — driven by one scroll progress over the whole block.
- * Lines are measured from the rendered layout, so they follow the real
- * wrapping at every width. Opacity is written straight to each word, with no
- * re-render while scrolling.
- */
-const INK_FROM = 0.22;
-
-function ScrollInkText({ paragraphs, className }: { paragraphs: string[]; className?: string }) {
-  const ref = useRef<HTMLDivElement>(null);
-  const { scrollYProgress } = useScroll({ target: ref, offset: ["start 0.8", "end 0.55"] });
-  const reduce = useSafeReducedMotion();
-  // Each word with the index of its line (across all paragraphs).
-  const layout = useRef<{ words: { el: HTMLElement; line: number }[]; total: number }>({ words: [], total: 1 });
-
-  const paint = useCallback(() => {
-    const { words, total } = layout.current;
-    const p = scrollYProgress.get() * total; // progress in "lines"
-    for (const { el, line } of words) {
-      const t = clamp01(p - line);
-      el.style.opacity = String(INK_FROM + (1 - INK_FROM) * t);
-    }
-  }, [scrollYProgress]);
-
-  useMotionValueEvent(scrollYProgress, "change", paint);
-
-  useEffect(() => {
-    const root = ref.current;
-    if (!root || reduce) return;
-    const measure = () => {
-      const words: { el: HTMLElement; line: number }[] = [];
-      let line = -1;
-      root.querySelectorAll<HTMLElement>("[data-ink-p]").forEach((p) => {
-        let lastTop = Number.NEGATIVE_INFINITY;
-        p.querySelectorAll<HTMLElement>("[data-ink-w]").forEach((el) => {
-          if (Math.abs(el.offsetTop - lastTop) > 4) {
-            line += 1;
-            lastTop = el.offsetTop;
-          }
-          words.push({ el, line });
-        });
-      });
-      layout.current = { words, total: Math.max(1, line + 1) };
-      paint();
-    };
-    const ro = new ResizeObserver(measure); // also fires once right away
-    ro.observe(root);
-    return () => ro.disconnect();
-  }, [reduce, paint]);
-
-  return (
-    <div ref={ref} className={className}>
-      {paragraphs.map((text, pi) =>
-        reduce ? (
-          <p key={pi} className="text-fg">{text}</p>
-        ) : (
-          <p key={pi} data-ink-p className="text-fg">
-            <span className="sr-only">{text}</span>
-            <span aria-hidden>
-              {text.split(" ").map((word, i, words) => (
-                <span key={i} data-ink-w style={{ opacity: INK_FROM }}>
-                  {word}
-                  {i < words.length - 1 ? " " : ""}
-                </span>
-              ))}
-            </span>
-          </p>
-        )
-      )}
-    </div>
-  );
-}
 
 function Title({ animate }: { animate: boolean }) {
   const words = intro.heading.split(" ");
@@ -187,22 +109,59 @@ function Title({ animate }: { animate: boolean }) {
   );
 }
 
-function Statement() {
+/** The three paragraphs, shown complete. */
+function StatementText() {
   return (
-    // Pulled up into the end of the pinned track, which otherwise leaves a tall
-    // empty gap below the photo on its way out.
-    <div className="relative mx-auto -mt-[25svh] max-w-3xl px-6 pb-28 text-center md:px-10 md:pb-40">
-      <ScrollReveal>
-        <h3 className="text-4xl font-medium leading-[1.05] tracking-tight md:text-6xl">
-          {intro.name.prefix} {intro.name.highlight}
-          {intro.name.suffix}
-        </h3>
-      </ScrollReveal>
-      <ScrollInkText
-        paragraphs={intro.paragraphs}
-        className="mt-10 flex flex-col gap-7 text-lg leading-relaxed md:mt-14 md:gap-9 md:text-2xl md:leading-[1.5]"
-      />
+    <div className="flex max-w-xl flex-col gap-5 text-base leading-relaxed text-fg md:gap-6 md:text-lg">
+      {intro.paragraphs.map((paragraph, i) => (
+        <p key={i}>{paragraph}</p>
+      ))}
     </div>
+  );
+}
+
+/** Below 1024px: the text in normal flow under the photo, as before. */
+function Statement() {
+  // Its own height, so it can stick with its bottom on the bottom of the
+  // screen (CSS alone can't place a sticky element by its bottom edge here).
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const ro = new ResizeObserver(() => el.style.setProperty("--statement-h", `${el.offsetHeight}px`));
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
+  return (
+    // One screen taller than what it adds to the page (clipped by the
+    // section), so the block has room to stay put while it is covered.
+    <div className="intro-cover-extend-auto">
+      {/* Pulled up into the end of the pinned track, which otherwise leaves a
+          tall empty gap below the photo on its way out. Left-aligned on the
+          same column as the rest of the site (max-w-6xl). */}
+      <div
+        ref={ref}
+        className="intro-statement relative mx-auto -mt-[25svh] max-w-6xl px-6 pb-28 text-left md:px-10 md:pb-40"
+      >
+        <div className="max-w-3xl">
+          <StatementText />
+        </div>
+      </div>
+      <div aria-hidden className="intro-cover-spacer" />
+    </div>
+  );
+}
+
+function useMediaQuery(query: string) {
+  return useSyncExternalStore(
+    (onChange) => {
+      const mq = window.matchMedia(query);
+      mq.addEventListener("change", onChange);
+      return () => mq.removeEventListener("change", onChange);
+    },
+    () => window.matchMedia(query).matches,
+    () => false
   );
 }
 
@@ -220,12 +179,13 @@ function Photo({ className, sizes }: { className?: string; sizes: string }) {
   );
 }
 
-function ScrollToScale() {
+function ScrollToScale({ wide }: { wide: boolean }) {
   const revealed = useShutterRevealed();
   const trackRef = useRef<HTMLDivElement>(null);
   const photoRef = useRef<HTMLDivElement>(null);
   const titleRef = useRef<HTMLDivElement>(null);
-  const geo = useRef<Geometry>({ ready: false, scale0: 0.3, inset0: 0, x0: 0, y0: 0, rise: 0 });
+  const textRef = useRef<HTMLDivElement>(null);
+  const geo = useRef<Geometry>({ ready: false, scale0: 0.3, inset0: 0, x0: 0, y0: 0, rise: 0, moveX: 0, textFrom: 0 });
 
   // Raw progress drives the rise (it must match the pin release exactly);
   // a spring-smoothed copy drives the growth for a softer feel.
@@ -239,12 +199,36 @@ function ScrollToScale() {
   const photoOpacity = useMotionValue(0);
   const titleOpacity = useMotionValue(1);
   const titleY = useMotionValue(0);
+  // Wide only: the text block coming in.
+  // Off screen until measured, so it never flashes in its final place.
+  const textX = useMotionValue(4000);
 
   const render = useCallback(() => {
     const g = geo.current;
     if (!g.ready) return;
     const ps = smooth.get();
     const pr = raw.get();
+
+    if (wide) {
+      // Positions in vh of scroll, read from the spring-smoothed progress so
+      // wheel steps glide instead of jumping. The pin lasts a bit past the end
+      // of the move (settleLen), so the spring settles before it releases.
+      const sv = ps * WIDE.pin;
+      const grow = easeInOut(clamp01((sv - WIDE.growFrom) / WIDE.growLen));
+      const open = easeOut(clamp01((sv - WIDE.growFrom) / WIDE.openLen));
+      const fade = clamp01((sv - WIDE.fadeFrom) / WIDE.fadeLen);
+      const move = easeInOutSine(clamp01((sv - (WIDE.growFrom + WIDE.growLen + WIDE.holdLen)) / WIDE.moveLen));
+
+      scale.set(g.scale0 + (1 - g.scale0) * grow);
+      x.set(g.x0 * (1 - grow) + g.moveX * move);
+      y.set(g.y0 * (1 - grow));
+      const inset = g.inset0 * (1 - open);
+      clipPath.set(`inset(0px ${inset}px 0px ${inset}px)`);
+      titleOpacity.set(1 - fade);
+      titleY.set(-40 * easeOut(fade));
+      textX.set(g.textFrom * (1 - move));
+      return;
+    }
 
     const grow = easeInOut(clamp01((ps - 0.06) / 0.56));
     const open = easeOut(clamp01((ps - 0.06) / 0.5));
@@ -259,7 +243,7 @@ function ScrollToScale() {
     clipPath.set(`inset(0px ${inset}px 0px ${inset}px)`);
     titleOpacity.set(1 - fade);
     titleY.set(-40 * easeOut(fade));
-  }, [smooth, raw, scale, x, y, clipPath, titleOpacity, titleY]);
+  }, [wide, smooth, raw, scale, x, y, clipPath, titleOpacity, titleY, textX]);
 
   const measure = useCallback(() => {
     const track = trackRef.current;
@@ -282,6 +266,10 @@ function ScrollToScale() {
         x0: container / 2 - side / 2,
         y0: 0,
         rise: pin * (1 - RISE_FROM),
+        // Right edge on the centre line: the photo fills the left half.
+        moveX: -w / 2,
+        // Far enough right that the block starts fully off screen.
+        textFrom: textRef.current ? vw - textRef.current.offsetLeft : vw,
       };
     } else {
       // Mobile: the square sits below the title. Its place comes from where the
@@ -299,6 +287,8 @@ function ScrollToScale() {
         x0: -(vw / 2 - 24) + side / 2,
         y0: top + side / 2 - stage / 2,
         rise: pin * (1 - RISE_FROM),
+        moveX: 0,
+        textFrom: 0,
       };
     }
     photoOpacity.set(1);
@@ -331,7 +321,15 @@ function ScrollToScale() {
   }, [measure, track]);
 
   return (
-    <div ref={trackRef} className="relative h-[240vh] md:h-[280vh]">
+    <div
+      ref={trackRef}
+      className="relative h-[240vh] md:h-[280vh]"
+      // Wide: room for the hold and the move as well (see WIDE).
+      style={wide ? { height: `${WIDE.pin + 100}vh` } : undefined}
+    >
+      {/* Wide: one screen taller than the track (clipped by the section), so
+          the stage stays put while «Especialidades» covers it. */}
+      <div className={wide ? "intro-cover-extend" : "h-full"}>
       <div className="sticky top-0 h-svh overflow-hidden">
         {/* Title: left on desktop, at the top on mobile */}
         <motion.div
@@ -355,13 +353,44 @@ function ScrollToScale() {
         >
           <Photo sizes="(min-width: 768px) 50vw, 88vw" />
         </motion.div>
+
+        {/* Wide: the text block, from the centre line (plus a gap) to the
+            right edge of the site column, coming in from the right. */}
+        {wide ? (
+          <motion.div
+            ref={textRef}
+            style={{ x: textX }}
+            className="absolute top-1/2 right-[max(2.5rem,calc((100%-72rem)/2))] left-[calc(50%+4rem)] -translate-y-1/2 will-change-transform"
+          >
+            <StatementText />
+          </motion.div>
+        ) : null}
+      </div>
       </div>
     </div>
   );
 }
 
-/** Reduced motion: the same content, laid out statically. */
-function StaticIntro() {
+/** Reduced motion: the same content, laid out statically. Wide screens show
+ *  the end state straight away: the photo on the left, the text on the right. */
+function StaticIntro({ wide }: { wide: boolean }) {
+  if (wide) {
+    return (
+      <div className="mx-auto max-w-6xl px-10 py-36">
+        <div className="max-w-xl">
+          <Title animate />
+        </div>
+        <div className="mt-20 grid grid-cols-2 items-center gap-16">
+          <div className="relative aspect-[3/2] w-full overflow-hidden">
+            <Photo sizes="50vw" />
+          </div>
+          <div>
+            <StatementText />
+          </div>
+        </div>
+      </div>
+    );
+  }
   return (
     <div className="mx-auto max-w-6xl px-6 py-28 md:px-10 md:py-36">
       <div className="grid gap-12 md:grid-cols-2 md:items-center">
@@ -376,14 +405,27 @@ function StaticIntro() {
   );
 }
 
+/** Reduced motion below 1024px: the text under the photo, no effects. */
+function StaticStatement() {
+  return (
+    <div className="mx-auto max-w-6xl px-6 pb-28 md:px-10 md:pb-40">
+      <div className="max-w-3xl">
+        <StatementText />
+      </div>
+    </div>
+  );
+}
+
 /** `id={null}` drops the anchor, for when a wrapper places it instead. */
 export function Intro({ id = "sobre-mi" }: { id?: string | null }) {
   const reduce = useSafeReducedMotion();
+  // Side by side from 1024px; below that the text stays under the photo.
+  const wide = useMediaQuery(WIDE_QUERY);
 
   return (
-    <Section id={id ?? undefined} theme="light" className="relative">
-      {reduce ? <StaticIntro /> : <ScrollToScale />}
-      <Statement />
+    <Section id={id ?? undefined} theme="light" className={cn("relative", !reduce && "intro-cover")}>
+      {reduce ? <StaticIntro wide={wide} /> : <ScrollToScale wide={wide} />}
+      {wide ? null : reduce ? <StaticStatement /> : <Statement />}
     </Section>
   );
 }

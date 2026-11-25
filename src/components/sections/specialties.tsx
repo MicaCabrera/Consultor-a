@@ -130,7 +130,7 @@ export function Specialties() {
   const total = specialties.items.length;
 
   return (
-    <Section id="especialidades" theme="dark" mist className="px-6 py-28 md:px-10 md:py-36">
+    <Section id="especialidades" theme="dark" mist className="z-10 px-6 py-28 md:px-10 md:py-36">
       <div className="mx-auto grid max-w-7xl grid-cols-1 lg:grid-cols-12 lg:gap-x-[30px]">
         <aside
           aria-hidden
@@ -140,16 +140,18 @@ export function Specialties() {
           <ActiveNumber active={active} />
         </aside>
 
-        <Reveal className="pb-[clamp(56px,7vw,118px)] lg:col-start-5 lg:col-end-12 lg:row-start-1">
+        <div className="pb-[clamp(56px,7vw,118px)] lg:col-start-5 lg:col-end-12 lg:row-start-1">
           <FadeHeading
             as="h2"
             lines={[specialties.heading]}
             className="text-4xl md:text-5xl"
           />
-          <p className="mt-6 max-w-xl text-base text-muted md:text-lg">
-            {specialties.description}
-          </p>
-        </Reveal>
+          <Reveal delay={0.2}>
+            <p className="mt-6 max-w-xl text-base text-muted md:text-lg">
+              {specialties.description}
+            </p>
+          </Reveal>
+        </div>
 
         {specialties.items.map((item, i) => (
           <Card

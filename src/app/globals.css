@@ -170,7 +170,48 @@ body {
   stroke-width: 2px;
 }
 
+/*
+ * Menu links: on hover a thin line draws in from the left, then leaves to
+ * the right — one sweep, not a line that stays.
+ */
+.nav-underline {
+  transform: scaleX(0);
+  transform-origin: left;
+  pointer-events: none;
+}
+
+.group:hover .nav-underline,
+.group:focus-visible .nav-underline {
+  animation: nav-underline-sweep 1.1s linear both;
+}
+
+@keyframes nav-underline-sweep {
+  0% {
+    transform: scaleX(0);
+    transform-origin: left;
+    animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+  }
+  50% {
+    transform: scaleX(1);
+    transform-origin: left;
+  }
+  50.01% {
+    transform: scaleX(1);
+    transform-origin: right;
+    animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+  }
+  100% {
+    transform: scaleX(0);
+    transform-origin: right;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
+  .group:hover .nav-underline,
+  .group:focus-visible .nav-underline {
+    animation: none;
+  }
+
   .btn-trace {
     display: none;
   }
@@ -182,4 +223,122 @@ body {
     linear-gradient(to bottom, rgba(48, 230, 176, 0.08) 1px, transparent 1px);
   background-size: 56px 56px;
   mask-image: radial-gradient(ellipse 80% 60% at 50% 40%, black 40%, transparent 85%);
+}
+
+/*
+ * Curtain reveal (CurtainReveal, src/components/curtain-reveal.tsx): A scrolls
+ * away above B, which stays still behind it until A is gone. vh first as the
+ * fallback for browsers without svh.
+ */
+.curtain-cover {
+  position: relative;
+  z-index: 10;
+}
+
+.curtain-cover > section {
+  min-height: 100vh;
+  min-height: 100svh;
+}
+
+.curtain-revealed {
+  position: sticky;
+  top: 0;
+  margin-top: -100vh;
+  margin-top: -100svh;
+}
+
+.curtain-spacer {
+  height: 100vh;
+  height: 100svh;
+}
+
+/* Reduced motion: one section after the other, as they were. */
+@media (prefers-reduced-motion: reduce) {
+  .curtain-cover > section {
+    min-height: 0;
+  }
+
+  .curtain-revealed {
+    position: static;
+    margin-top: 0;
+  }
+
+  .curtain-spacer {
+    display: none;
+  }
+}
+
+/*
+ * Clipped curtain (ClipReveal): for a see-through section on top. The wrapper
+ * starts where that section ends and clips to its own box; the revealed
+ * section inside stays still, drawn only below that edge.
+ */
+.clip-curtain {
+  position: relative;
+  display: flow-root; /* the child's negative margin must not collapse into it */
+  clip-path: inset(0);
+}
+
+.clip-curtain-revealed {
+  position: sticky;
+  top: 0;
+  margin-top: -100vh;
+  margin-top: -100svh;
+}
+
+.clip-curtain-spacer {
+  height: 100vh;
+  height: 100svh;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .clip-curtain {
+    clip-path: none;
+  }
+
+  .clip-curtain-revealed {
+    position: static;
+    margin-top: 0;
+  }
+
+  .clip-curtain-spacer {
+    display: none;
+  }
+}
+
+/*
+ * «Sobre mí» → «Especialidades» cover (intro.tsx): the last screen of «Sobre
+ * mí» stays still while «Especialidades» rises over it. The pinned part gets
+ * one extra screen of room that overflows the section; the section clips it,
+ * so it never shows through «Especialidades», which is see-through.
+ */
+.intro-cover {
+  clip-path: inset(0);
+}
+
+/* Wide: the stage's box, one screen taller than its track. */
+.intro-cover-extend {
+  height: calc(100% + 100vh);
+  height: calc(100% + 100svh);
+}
+
+/* Narrow: the paragraphs' box, one screen taller than what it adds (a
+   spacer, not padding: a sticky element only moves within the content box). */
+.intro-cover-extend-auto {
+  margin-bottom: -100vh;
+  margin-bottom: -100svh;
+}
+
+/* One screen of room for the cover, plus 30vh during which the paragraphs
+   stay put before «Especialidades» starts rising (same delay as on wide). */
+.intro-cover-spacer {
+  height: calc(100vh + 30vh);
+  height: calc(100svh + 30vh);
+}
+
+/* Sticks with its bottom on the bottom of the screen. */
+.intro-statement {
+  position: sticky;
+  top: calc(100vh - var(--statement-h, 0px));
+  top: calc(100svh - var(--statement-h, 0px));
 }

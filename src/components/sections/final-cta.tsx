@@ -8,13 +8,11 @@ export function FinalCta() {
   return (
     <Section theme="dark" mist className="relative overflow-hidden px-6 py-32 text-center md:px-10 md:py-40">
       <div className="mx-auto flex max-w-3xl flex-col items-center">
-        <Reveal>
-          <FadeHeading
-            as="h2"
-            lines={[finalCta.heading]}
-            className="text-4xl md:text-6xl"
-          />
-        </Reveal>
+        <FadeHeading
+          as="h2"
+          lines={[finalCta.heading]}
+          className="text-4xl md:text-6xl"
+        />
         <Reveal delay={0.15}>
           <p className="mt-6 text-base text-muted md:text-lg">{finalCta.description}</p>
         </Reveal>

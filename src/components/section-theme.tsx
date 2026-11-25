@@ -1,25 +1,34 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useId, useState } from "react";
 
 type Theme = "dark" | "light";
 
 const ThemeContext = createContext<Theme>("dark");
-const OverrideContext = createContext<(theme: Theme | null) => void>(() => {});
+type SetOverride = (key: string, theme: Theme | null) => void;
+const OverrideContext = createContext<SetOverride>(() => {});
 
 export function useNavTheme() {
   return useContext(ThemeContext);
 }
 
 /** Lets a section force the nav theme while it is under the nav, e.g. when two
- *  sections are stacked at the same position. Pass `null` to release it. */
+ *  sections are stacked at the same position. Pass `null` to release it.
+ *  Each caller has its own slot, so one releasing never clears another. */
 export function useNavThemeOverride() {
-  return useContext(OverrideContext);
+  const set = useContext(OverrideContext);
+  const key = useId();
+  return useCallback((theme: Theme | null) => set(key, theme), [set, key]);
 }
 
 export function SectionThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setTheme] = useState<Theme>("dark");
-  const [override, setOverride] = useState<Theme | null>(null);
+  const [overrides, setOverrides] = useState<Record<string, Theme | null>>({});
+  const setOverride = useCallback<SetOverride>(
+    (key, next) => setOverrides((prev) => (prev[key] === next ? prev : { ...prev, [key]: next })),
+    []
+  );
+  const override = Object.values(overrides).find((t) => t != null) ?? null;
 
   useEffect(() => {
     const observer = new IntersectionObserver(

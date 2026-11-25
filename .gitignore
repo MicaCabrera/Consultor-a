@@ -43,5 +43,7 @@ next-env.d.ts
 
 # local references and tooling (not part of the site)
 *.mp4
+# ...except the site's own hero video
+!/public/hero/*.mp4
 /Foto.jpeg
 /.claude/
