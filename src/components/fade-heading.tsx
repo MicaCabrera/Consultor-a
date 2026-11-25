@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { Fragment, useEffect, useRef, useState } from "react";
 import { motion, useInView } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { useSafeReducedMotion } from "@/lib/use-reduced-motion";
@@ -14,11 +14,14 @@ import { useUncovered } from "@/components/curtain-reveal";
  * the rendered layout, so it follows the real wrapping at every width — and
  * a whole line moves together, each line a little after the one above. It
  * plays once, the first time the heading enters the viewport (or on mount
- * with `trigger="mount"`, for the first screen).
+ * with `trigger="mount"`, for the first screen; `trigger="static"` shows it
+ * in place with no animation, for visual copies).
  *
  * The masks add no space: their bottom padding (room for descenders) is
- * cancelled by an equal negative margin, and the word spacing is the same
- * margin the words had before, so the heading's layout is unchanged.
+ * cancelled by an equal negative margin. Words are separated by real spaces,
+ * so the heading reads as normal text to search engines, AI crawlers and
+ * screen readers; .fade-heading's word-spacing matches the gap the words had
+ * before, when a margin separated them.
  */
 
 // Smooth ease-in-out with a long, soft landing.
@@ -31,7 +34,6 @@ export function FadeHeading({
   fadedWords = 0,
   className,
   dot = false,
-  accentWords = [],
   as: Tag = "h1",
   trigger = "view",
   delay = 0,
@@ -40,11 +42,10 @@ export function FadeHeading({
   fadedWords?: number;
   className?: string;
   dot?: boolean;
-  /** Words shown in the accent serif italic, like the hero highlight. */
-  accentWords?: string[];
-  as?: "h1" | "h2" | "h3";
+  /** "p" for purely visual copies of a heading (no extra headings in the page). */
+  as?: "h1" | "h2" | "h3" | "p";
   /** "view": when it scrolls into view (once). "mount": as soon as it renders. */
-  trigger?: "view" | "mount";
+  trigger?: "view" | "mount" | "static";
   /** Seconds before the first line starts. */
   delay?: number;
 }) {
@@ -53,7 +54,7 @@ export function FadeHeading({
   const reduce = useSafeReducedMotion();
   // Behind a curtain (CurtainReveal), also wait until it is really uncovered.
   const uncovered = useUncovered(ref, 0.35);
-  const show = reduce || trigger === "mount" || (inView && uncovered);
+  const show = reduce || trigger !== "view" || (inView && uncovered);
 
   // Line index of each word, measured after layout (and again on resize, as
   // long as the reveal hasn't played yet).
@@ -80,6 +81,25 @@ export function FadeHeading({
   }, []);
 
   const linesWords = lines.map((line) => line.split(" "));
+
+  if (trigger === "static") {
+    return (
+      <Tag className={cn("fade-heading font-medium leading-[0.95] tracking-tight", className)}>
+        {linesWords.map((lineWords, lineIndex) => (
+          <span key={lineIndex} className="block">
+            {lineWords.map((word, i) => (
+              <Fragment key={i}>
+                <span className="-mb-[0.14em] overflow-hidden pb-[0.14em] align-bottom">
+                  <span>{word}</span>
+                </span>
+                {i < lineWords.length - 1 ? " " : null}
+              </Fragment>
+            ))}
+          </span>
+        ))}
+      </Tag>
+    );
+  }
   const totalWords = linesWords.flat().length;
   let w = 0;
 
@@ -90,26 +110,23 @@ export function FadeHeading({
           {lineWords.map((word, i) => {
             const index = w++;
             const isFaded = totalWords - index <= fadedWords;
-            const isAccent = accentWords.includes(word.replace(/[.,;:!?¿¡]/g, ""));
             const isLast = lineIndex === linesWords.length - 1 && i === lineWords.length - 1;
             const line = lineOf[index] ?? 0;
             return (
-              <span
-                key={i}
-                data-mask
-                className="-mb-[0.14em] mr-[0.22em] overflow-hidden pb-[0.14em] align-bottom"
-              >
-                <motion.span
-                  initial={reduce ? false : { y: "115%" }}
-                  animate={show ? { y: "0%" } : { y: "115%" }}
-                  transition={{ duration: DURATION, ease: EASE, delay: delay + line * LINE_STAGGER }}
-                  className={cn(isFaded && "is-faded", isAccent && "text-accent italic")}
-                  style={isAccent ? { fontFamily: "var(--font-accent-serif)" } : undefined}
-                >
-                  {word}
-                  {isLast && dot ? <span className="accent-dot" /> : null}
-                </motion.span>
-              </span>
+              <Fragment key={i}>
+                <span data-mask className="-mb-[0.14em] overflow-hidden pb-[0.14em] align-bottom">
+                  <motion.span
+                    initial={reduce ? false : { y: "115%" }}
+                    animate={show ? { y: "0%" } : { y: "115%" }}
+                    transition={{ duration: DURATION, ease: EASE, delay: delay + line * LINE_STAGGER }}
+                    className={cn(isFaded && "is-faded")}
+                  >
+                    {word}
+                    {isLast && dot ? <span className="accent-dot" /> : null}
+                  </motion.span>
+                </span>
+                {isLast ? null : " "}
+              </Fragment>
             );
           })}
         </span>

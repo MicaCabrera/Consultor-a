@@ -194,9 +194,13 @@ function ScrollToScale({ wide }: { wide: boolean }) {
 
   const x = useMotionValue(0);
   const y = useMotionValue(0);
-  const scale = useMotionValue(0.3);
+  // Full size until measured: at load the photo is behind the hero cover, and
+  // starting big means its first paint is already its largest (LCP).
+  const scale = useMotionValue(1);
   const clipPath = useMotionValue("inset(0px 0px 0px 0px)");
-  const photoOpacity = useMotionValue(0);
+  // Visible from the first paint: at load it sits behind the hero cover, so
+  // there is nothing to hide while the script measures it.
+  const photoOpacity = useMotionValue(1);
   const titleOpacity = useMotionValue(1);
   const titleY = useMotionValue(0);
   // Wide only: the text block coming in.

@@ -4,6 +4,7 @@ import { FadeHeading } from "@/components/fade-heading";
 import { Button } from "@/components/button";
 import { CountUp } from "@/components/count-up";
 import { consulting } from "@/lib/content";
+import { WA, whatsappUrl } from "@/lib/mica";
 
 /** "USD 120" → currency "USD" and amount 120, so the amount can count up. */
 function splitPrice(price: string) {
@@ -51,7 +52,7 @@ export function Consulting() {
         </div>
 
         <Reveal delay={0.25}>
-          <Button href="#como-funciona" className="mt-12 w-full justify-center px-7 py-3.5 text-base sm:w-auto">
+          <Button href={whatsappUrl(WA.avanzar)} external className="mt-12 w-full justify-center px-7 py-3.5 text-base sm:w-auto">
             {consulting.cta}
           </Button>
         </Reveal>

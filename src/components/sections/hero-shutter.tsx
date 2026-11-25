@@ -33,7 +33,7 @@ export function HeroShutter() {
           className={cn(HERO_CLASS, "h-full bg-bg-dark text-fg-dark")}
         >
           <HeroVideoMirror />
-          <HeroContent />
+          <HeroContent copy />
         </div>
       }
       anchorId="sobre-mi"

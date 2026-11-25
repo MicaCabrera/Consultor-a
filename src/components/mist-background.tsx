@@ -107,20 +107,23 @@ function noiseVolume(size = 32) {
     seed = (seed * 1664525 + 1013904223) >>> 0;
     a[i] = seed / 4294967296;
   }
-  const idx = (x: number, y: number, z: number) =>
-    ((z + size) % size) * size * size + ((y + size) % size) * size + ((x + size) % size);
+  // A 3×3×3 box blur is separable: three 1D 3-tap passes (x, then y, then
+  // z, wrapping around) give the same result as the 27-tap one, with far
+  // less work. Done twice, as before.
+  const blur1D = (src: Float32Array, stride: number) => {
+    const out = new Float32Array(n);
+    const span = stride * size;
+    for (let i = 0; i < n; i++) {
+      const base = i - (i % span) + (i % stride);
+      const k = Math.floor((i % span) / stride);
+      const prev = base + ((k + size - 1) % size) * stride;
+      const next = base + ((k + 1) % size) * stride;
+      out[i] = (src[prev] + src[i] + src[next]) / 3;
+    }
+    return out;
+  };
   for (let pass = 0; pass < 2; pass++) {
-    const b = new Float32Array(n);
-    for (let z = 0; z < size; z++)
-      for (let y = 0; y < size; y++)
-        for (let x = 0; x < size; x++) {
-          let sum = 0;
-          for (let dz = -1; dz <= 1; dz++)
-            for (let dy = -1; dy <= 1; dy++)
-              for (let dx = -1; dx <= 1; dx++) sum += a[idx(x + dx, y + dy, z + dz)];
-          b[idx(x, y, z)] = sum / 27;
-        }
-    a = b;
+    a = blur1D(blur1D(blur1D(a, 1), size), size * size);
   }
   let min = 1, max = 0;
   for (const v of a) { if (v < min) min = v; if (v > max) max = v; }
@@ -162,6 +165,26 @@ export function MistBackground() {
     return () => observer.disconnect();
   }, []);
 
+  // WebGL is set up lazily: when the page is idle after loading, or as soon
+  // as a mist section comes near, whichever happens first.
+  const [armed, setArmed] = useState(false);
+  useEffect(() => {
+    if (armed) return;
+    let idle = 0;
+    const arm = () => setArmed(true);
+    const onLoad = () => {
+      idle = window.requestIdleCallback ? window.requestIdleCallback(arm, { timeout: 4000 }) : window.setTimeout(arm, 2000);
+    };
+    if (document.readyState === "complete") onLoad();
+    else window.addEventListener("load", onLoad, { once: true });
+    return () => {
+      window.removeEventListener("load", onLoad);
+      if (window.cancelIdleCallback) window.cancelIdleCallback(idle);
+      window.clearTimeout(idle);
+    };
+  }, [armed]);
+  if (active && !armed) setArmed(true);
+
   // WebGL: set up once, render while active.
   const state = useRef<{
     draw: () => void;
@@ -172,7 +195,7 @@ export function MistBackground() {
 
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (!canvas) return;
+    if (!canvas || !armed) return;
     const gl = canvas.getContext("webgl2", {
       alpha: false,
       antialias: false,
@@ -281,7 +304,7 @@ export function MistBackground() {
       gl.deleteTexture(tex);
       gl.deleteProgram(prog);
     };
-  }, []);
+  }, [armed]);
 
   // Render loop: only while a mist section is visible and the tab is shown.
   useEffect(() => {
@@ -314,7 +337,7 @@ export function MistBackground() {
       stop();
       document.removeEventListener("visibilitychange", onVisibility);
     };
-  }, [active, reduce]);
+  }, [active, reduce, armed]);
 
   return (
     <div

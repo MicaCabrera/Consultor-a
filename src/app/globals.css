@@ -72,6 +72,12 @@ body {
   display: inline-block;
 }
 
+/* Words are separated by real spaces; this matches the 0.22em margin that
+   separated them before (a DM Sans space is a little wider). */
+.fade-heading {
+  word-spacing: -0.011em;
+}
+
 .fade-heading .is-faded {
   color: var(--muted-dark);
 }
@@ -92,15 +98,16 @@ body {
   transform: translateY(-0.28em);
 }
 
-/* Buttons: square, no glow. On dark sections: transparent with a thin white
-   border. On light sections: white with a
-   faint dark border. On hover a line traces the
-   border (.btn-trace). */
+/* Buttons: pills with an arrow. On dark sections: a soft light fill (a touch
+   of the accent in it) with dark text. On light sections: the inverse, dark
+   fill with light text. On hover the fill brightens and the arrow turns. */
 .btn {
-  background: transparent;
-  border: 1px solid rgba(245, 246, 244, 0.55);
-  color: var(--fg-dark);
-  transition: border-color 200ms ease, background-color 900ms ease-in-out;
+  --btn-fill: color-mix(in srgb, var(--fg-dark) 90%, var(--accent));
+  border: 1px solid transparent;
+  border-radius: 9999px;
+  background: var(--btn-fill);
+  color: #0a0b0a;
+  transition: background-color 300ms ease;
 }
 
 .btn:focus-visible {
@@ -109,65 +116,37 @@ body {
 }
 
 [data-theme="light"] .btn {
-  background: #ffffff;
-  border-color: rgba(10, 11, 10, 0.22);
-  color: #0a0b0a;
+  background: #0a0b0a;
+  color: var(--fg-dark);
 }
 
 [data-theme="light"] .btn:hover {
-  background: #ffffff;
-  border-color: rgba(10, 11, 10, 0.22);
+  background: #1d201e;
 }
 
 /* Comes after the light rule so a dark block inside a light section wins. */
 [data-theme="dark"] .btn {
-  background: transparent;
-  border-color: rgba(245, 246, 244, 0.55);
-  color: var(--fg-dark);
+  background: var(--btn-fill);
+  color: #0a0b0a;
 }
 
-/*
- * Border trace (after Vitor Siqueira, "100 days css Button N° 045", MIT):
- * a line about a third of the perimeter long sits hidden before the start;
- * on hover it runs once around the whole border and leaves, and on hover-out
- * it runs back. pathLength=100 makes it work at any button size.
- */
-.btn-trace {
-  position: absolute;
-  inset: -1px;
-  width: calc(100% + 2px);
-  height: calc(100% + 2px);
-  overflow: visible;
-  pointer-events: none;
-}
-
-.btn-trace rect {
-  x: 0.5px;
-  y: 0.5px;
-  width: calc(100% - 1px);
-  height: calc(100% - 1px);
-  fill: none;
-  stroke: var(--fg-dark);
-  stroke-width: 1px;
-  stroke-dasharray: 31 100;
-  stroke-dashoffset: 31;
-  transition: stroke-dashoffset 900ms ease-in-out;
-}
-
-.btn:hover .btn-trace rect {
-  stroke-dashoffset: -100;
-}
-
-/* The border stays as is on hover, so the white trace stands out. */
-.btn:hover,
 [data-theme="dark"] .btn:hover {
-  background: rgba(48, 230, 176, 0.08);
+  background: #ffffff;
 }
 
-/* On light sections: white button, black line. */
-[data-theme="light"] .btn-trace rect {
-  stroke: #0a0b0a;
-  stroke-width: 2px;
+/* The arrow turns on hover: ↗ swings down to →, → swings up to ↗. */
+.btn-arrow {
+  transition: transform 450ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.btn:hover .btn-arrow-out,
+.btn:focus-visible .btn-arrow-out {
+  transform: rotate(45deg);
+}
+
+.btn:hover .btn-arrow-in,
+.btn:focus-visible .btn-arrow-in {
+  transform: rotate(-45deg);
 }
 
 /*
@@ -212,8 +191,8 @@ body {
     animation: none;
   }
 
-  .btn-trace {
-    display: none;
+  .btn:hover .btn-arrow {
+    transform: none;
   }
 }
 
@@ -341,4 +320,69 @@ body {
   position: sticky;
   top: calc(100vh - var(--statement-h, 0px));
   top: calc(100svh - var(--statement-h, 0px));
+}
+
+/* At least one screen tall; vh first as the fallback for browsers without svh. */
+.full-screen {
+  min-height: 100vh;
+  min-height: 100svh;
+}
+
+/* "Saltar al contenido": hidden until it gets keyboard focus. */
+.skip-link {
+  position: fixed;
+  top: 12px;
+  left: 12px;
+  z-index: 100;
+  padding: 10px 18px;
+  border-radius: 9999px;
+  background: var(--fg-dark);
+  color: #0a0b0a;
+  font-size: 14px;
+  font-weight: 500;
+  transform: translateY(-160%);
+  transition: transform 200ms ease;
+}
+
+.skip-link:focus-visible {
+  transform: translateY(0);
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+/* Visible keyboard focus for links and buttons, in the site's accent. */
+a:focus-visible,
+button:focus-visible,
+[tabindex]:not([tabindex="-1"]):focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+/* Secondary text on the mist sections: the green glow is lighter than the
+   page background, so the grey is a touch lighter there to keep 4.5:1. */
+[data-mist] .text-muted {
+  color: #a3a7a2;
+}
+
+/* Hero subtitle and button: fade up on load, in CSS so they don't wait for
+   the page script (they used to be framer-motion, same timing). */
+.hero-rise {
+  animation: hero-rise 0.7s cubic-bezier(0.25, 0.1, 0.25, 1) both;
+}
+
+@keyframes hero-rise {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-rise {
+    animation: none;
+  }
 }

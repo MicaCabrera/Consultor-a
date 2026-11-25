@@ -148,6 +148,18 @@ export function SlatShutter({
   const [phase, setPhase] = React.useState<ShutterPhase>("cover");
   // Latches: once revealed, entrances don't replay when scrolling back up.
   const [revealed, setRevealed] = React.useState(false);
+
+  // The slats are 6–8 static copies of the cover: build them only when the
+  // visitor starts scrolling (the slats start moving a little later), so
+  // they never weigh on the first load.
+  const [slatsReady, setSlatsReady] = React.useState(false);
+  React.useEffect(() => {
+    if (slatsReady) return;
+    const ready = () => setSlatsReady(true);
+    if (window.scrollY > 0) ready();
+    window.addEventListener("scroll", ready, { once: true, passive: true });
+    return () => window.removeEventListener("scroll", ready);
+  }, [slatsReady]);
   useMotionValueEvent(progress, "change", (p) => {
     setPhase(p < SLATS_START ? "cover" : p > SLATS_DONE ? "done" : "moving");
     if (p > 0.5) setRevealed(true);
@@ -199,6 +211,18 @@ export function SlatShutter({
 
       <PhaseContext.Provider value={phase}>
       <div className="sticky top-0 overflow-x-clip">
+        {/* The real, interactive cover while at rest. First in the page order
+            (hero, then «Sobre mí»); absolutely placed, so the layout is the
+            same as if it came last. */}
+        <div
+          className={cn(
+            "absolute inset-x-0 top-0 z-20 h-svh overflow-hidden",
+            phase !== "cover" && "invisible"
+          )}
+        >
+          {cover}
+        </div>
+
         {/* Revealed content, pinned while the slats open */}
         <motion.div
           className="relative origin-top"
@@ -222,23 +246,13 @@ export function SlatShutter({
             phase !== "moving" && "invisible"
           )}
         >
-          {isClient
+          {isClient && slatsReady
             ? Array.from({ length: count }, (_, i) => (
                 <Slat key={`${count}-${i}`} index={i} count={count} progress={progress}>
                   {slice}
                 </Slat>
               ))
             : null}
-        </div>
-
-        {/* The real, interactive cover while at rest */}
-        <div
-          className={cn(
-            "absolute inset-x-0 top-0 z-20 h-svh overflow-hidden",
-            phase !== "cover" && "invisible"
-          )}
-        >
-          {cover}
         </div>
       </div>
       </PhaseContext.Provider>

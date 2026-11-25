@@ -1,6 +1,5 @@
 "use client";
 
-import { motion } from "framer-motion";
 import { Section } from "@/components/section";
 import { Button } from "@/components/button";
 import { FadeHeading } from "@/components/fade-heading";
@@ -21,8 +20,10 @@ export function Hero() {
 }
 
 /** Everything inside the hero section. Rendered once for real and, as a
- *  visual copy, inside each slat of the hero → «Sobre mí» transition. */
-export function HeroContent() {
+ *  visual copy (`copy`), inside each slat of the hero → «Sobre mí»
+ *  transition: the copies show the final state straight away, with no
+ *  entrance animation, and their title isn't a heading (one h1 per page). */
+export function HeroContent({ copy = false }: { copy?: boolean }) {
   return (
     <>
       <div className="absolute inset-0 -z-10 bg-gradient-to-b from-transparent via-transparent to-bg-dark" />
@@ -35,30 +36,36 @@ export function HeroContent() {
           {/* Lines rise from their masks on load. Non-breaking spaces keep
               "lo que viene?" together on one line, as before. */}
           <FadeHeading
-            as="h1"
-            trigger="mount"
+            as={copy ? "p" : "h1"}
+            trigger={copy ? "static" : "mount"}
             delay={0.15}
             lines={[`${hero.headingPrefix} ${hero.headingHighlight.replace(/ /g, " ")}${hero.headingSuffix}`]}
             className="max-w-[15ch] text-left text-[13vw] font-medium leading-[0.9] tracking-tight text-fg-dark md:text-[9vw] lg:text-[6.4vw]"
           />
 
-          <motion.p
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.7 }}
-            className="mt-8 max-w-xl text-left text-base text-muted md:text-lg"
-          >
-            {hero.description}
-          </motion.p>
+          {copy ? (
+            <>
+              <p className="mt-8 max-w-xl text-left text-base text-muted md:text-lg">{hero.description}</p>
+              <div className="mt-10 flex flex-col items-start gap-4">
+                <Button href="#consultoria">{hero.cta}</Button>
+              </div>
+            </>
+          ) : (
+            <>
+              {/* Same fade-up as before, in CSS (.hero-rise): it starts with the
+                  first paint instead of waiting for the page script. */}
+              <p
+                className="hero-rise mt-8 max-w-xl text-left text-base text-muted md:text-lg"
+                style={{ animationDelay: "0.7s" }}
+              >
+                {hero.description}
+              </p>
 
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.85 }}
-            className="mt-10 flex flex-col items-start gap-4"
-          >
-            <Button href="#consultoria">{hero.cta}</Button>
-          </motion.div>
+              <div className="hero-rise mt-10 flex flex-col items-start gap-4" style={{ animationDelay: "0.85s" }}>
+                <Button href="#consultoria">{hero.cta}</Button>
+              </div>
+            </>
+          )}
         </div>
       </div>
     </>

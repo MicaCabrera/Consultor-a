@@ -31,8 +31,8 @@ const START: Message[] = [{ id: 0, from: "mica", step: "welcome" }];
  * The conversation lives in this component's state, so closing and reopening
  * the window keeps it until the visitor restarts it (or leaves the page).
  */
-export function MicaChat() {
-  const [open, setOpen] = useState(false);
+export function MicaChat({ initialOpen = false }: { initialOpen?: boolean }) {
+  const [open, setOpen] = useState(initialOpen);
   const [messages, setMessages] = useState<Message[]>(START);
   const [typing, setTyping] = useState(false);
   const [draft, setDraft] = useState("");
@@ -41,9 +41,19 @@ export function MicaChat() {
 
   const reduce = useSafeReducedMotion();
   const panelId = useId();
-  const launcherRef = useRef<HTMLButtonElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const logRef = useRef<HTMLDivElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
+
+  // The launcher is unmounted while the window is open, so focus goes back to
+  // it as soon as it is mounted again after closing.
+  const returnFocus = useRef(false);
+  const launcherRef = useCallback((el: HTMLButtonElement | null) => {
+    if (el && returnFocus.current) {
+      returnFocus.current = false;
+      el.focus();
+    }
+  }, []);
 
   const reply = useCallback(
     (visitorText: string, step: StepId, asked?: string) => {
@@ -79,9 +89,36 @@ export function MicaChat() {
   };
 
   const close = useCallback(() => {
+    returnFocus.current = true;
     setOpen(false);
-    launcherRef.current?.focus();
   }, []);
+
+  // On open, focus goes into the window (the message box).
+  useEffect(() => {
+    if (!open) return;
+    const id = window.setTimeout(() => inputRef.current?.focus(), 60);
+    return () => window.clearTimeout(id);
+  }, [open]);
+
+  // While open, Tab and Shift+Tab cycle inside the window.
+  const trapFocus = (event: React.KeyboardEvent) => {
+    if (event.key !== "Tab") return;
+    const panel = panelRef.current;
+    if (!panel) return;
+    const items = [...panel.querySelectorAll<HTMLElement>("a[href], button:not([disabled]), input, [tabindex]:not([tabindex='-1'])")].filter(
+      (el) => el.offsetParent !== null
+    );
+    if (!items.length) return;
+    const first = items[0];
+    const last = items[items.length - 1];
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault();
+      first.focus();
+    }
+  };
 
   useEffect(() => () => window.clearTimeout(timer.current), []);
 
@@ -118,7 +155,8 @@ export function MicaChat() {
             ref={launcherRef}
             type="button"
             data-cursor="link"
-            aria-label="Abrir chat con Avi, asistente virtual"
+            aria-label="Abrir chat"
+            title="Abrir chat con Avi, asistente virtual"
             aria-expanded={false}
             aria-controls={panelId}
             onClick={() => setOpen(true)}
@@ -141,9 +179,12 @@ export function MicaChat() {
       <AnimatePresence>
         {open && (
           <motion.div
+            ref={panelRef}
             id={panelId}
             role="dialog"
+            aria-modal="true"
             aria-label="Chat con Avi, asistente virtual"
+            onKeyDown={trapFocus}
             initial={reduce ? { opacity: 0 } : { opacity: 0, y: 24, scale: 0.98 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={reduce ? { opacity: 0 } : { opacity: 0, y: 24, scale: 0.98 }}

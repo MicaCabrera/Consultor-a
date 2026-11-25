@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { nav, footer } from "@/lib/content";
@@ -39,18 +39,40 @@ export function Nav() {
     };
   }, [inlineOpen]);
 
-  // While the full-screen menu is open: no page scroll behind it, Esc closes it.
+  // While the full-screen menu is open: no page scroll behind it, Esc closes
+  // it, focus moves into it and Tab stays inside; on close, focus goes back
+  // to the button that opened it.
+  const overlayRef = useRef<HTMLDivElement>(null);
+  const openerRef = useRef<HTMLElement | null>(null);
   useEffect(() => {
     if (!open) return;
+    openerRef.current = document.activeElement as HTMLElement | null;
+    const focusables = () =>
+      [...(overlayRef.current?.querySelectorAll<HTMLElement>("a[href], button") ?? [])];
     const onKey = (event: KeyboardEvent) => {
       if (event.key === "Escape") setOpen(false);
+      if (event.key !== "Tab") return;
+      const items = focusables();
+      if (!items.length) return;
+      const first = items[0];
+      const last = items[items.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
     };
     const previous = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     window.addEventListener("keydown", onKey);
+    const id = window.setTimeout(() => focusables()[0]?.focus(), 50);
     return () => {
+      window.clearTimeout(id);
       document.body.style.overflow = previous;
       window.removeEventListener("keydown", onKey);
+      openerRef.current?.focus();
     };
   }, [open]);
   const theme = useNavTheme();
@@ -133,6 +155,9 @@ export function Nav() {
             onClick={() => setOpen(true)}
             className="relative z-50 -mr-2 flex h-11 w-11 flex-col items-center justify-center gap-[5px] md:hidden"
             aria-label="Abrir menú"
+            aria-expanded={open}
+            aria-controls="nav-overlay"
+            aria-haspopup="dialog"
           >
             <span className="h-px w-6 bg-current" />
             <span className="h-px w-6 bg-current" />
@@ -143,8 +168,8 @@ export function Nav() {
             type="button"
             data-cursor="link"
             onClick={onMenu}
-            aria-expanded={inlineOpen}
-            aria-controls="nav-inline"
+            aria-expanded={inlineOpen || open}
+            aria-controls={open ? "nav-overlay" : "nav-inline"}
             className="-my-3 hidden items-center gap-3 py-3 text-[13px] font-semibold uppercase tracking-wider md:flex"
           >
             <RollText text="Menú" />
@@ -170,6 +195,11 @@ export function Nav() {
       <AnimatePresence>
         {open && (
           <motion.div
+            ref={overlayRef}
+            id="nav-overlay"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Menú"
             initial={{ clipPath: "inset(0 0 100% 0)" }}
             animate={{ clipPath: "inset(0 0 0% 0)" }}
             exit={{ clipPath: "inset(0 0 100% 0)" }}

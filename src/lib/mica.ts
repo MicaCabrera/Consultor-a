@@ -5,7 +5,7 @@
  * handles payments. To change what Avi says, edit this file only.
  */
 
-const WHATSAPP_NUMBER = "5491123136781";
+export const WHATSAPP_NUMBER = "5491123136781";
 
 /** WhatsApp link, optionally with a pre-filled message (URL-encoded). */
 export function whatsappUrl(message?: string) {

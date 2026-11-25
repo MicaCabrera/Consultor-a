@@ -32,6 +32,7 @@ export function MicaAnimation({ className }: { className?: string }) {
         animationData: data,
         rendererSettings: { preserveAspectRatio: "xMidYMid meet" },
       });
+      anim.setSubframe(false);
       if (reduce) anim.goToAndStop(0, true);
       destroy = () => anim.destroy();
     })().catch(() => {
