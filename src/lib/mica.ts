@@ -275,3 +275,19 @@ export function matchFreeText(text: string): StepId {
   }
   return "fallback";
 }
+
+/** Chat window text. */
+export const CHAT_UI = {
+  openChat: "Abrir chat",
+  openChatTitle: "Abrir chat con Avi, asistente virtual",
+  dialog: "Chat con Avi, asistente virtual",
+  role: "Asistente virtual",
+  online: "En línea",
+  whatsapp: "Hablar por WhatsApp",
+  restart: "Reiniciar conversación",
+  close: "Cerrar chat",
+  back: "Volver al menú principal",
+  typing: "Avi está escribiendo",
+  placeholder: "Escribí tu consulta…",
+  send: "Enviar mensaje",
+};

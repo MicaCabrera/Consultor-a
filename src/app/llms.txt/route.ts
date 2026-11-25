@@ -38,6 +38,7 @@ export function GET() {
     "## Enlaces",
     "",
     `- [Sitio](${SITE_URL}/)`,
+    `- [English version](${SITE_URL}/en)`,
     `- [Sobre mí](${SITE_URL}/#sobre-mi)`,
     `- [Especialidades](${SITE_URL}/#especialidades)`,
     `- [Consultoría](${SITE_URL}/#consultoria)`,

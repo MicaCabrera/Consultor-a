@@ -3,12 +3,48 @@
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { cn } from "@/lib/utils";
-import { nav, footer } from "@/lib/content";
+import { useContent, useLocale } from "@/components/locale-provider";
+import { LOCALE_LANG, LOCALE_PATH, LOCALES } from "@/lib/i18n";
 import { useNavTheme } from "@/components/section-theme";
 import { RollText } from "@/components/roll-text";
 import { useSafeReducedMotion } from "@/lib/use-reduced-motion";
 
+/**
+ * ES / EN: same type as MENÚ, the current language bright and the other one
+ * dimmed. Each links to that language's version of the page.
+ */
+function LanguageSwitch({ label }: { label: string }) {
+  const locale = useLocale();
+  return (
+    <nav aria-label={label} className="flex items-center gap-1.5 text-[13px] font-semibold uppercase tracking-wider">
+      {LOCALES.map((l, i) => (
+        <span key={l} className="flex items-center gap-1.5">
+          {i > 0 ? (
+            <span aria-hidden className="opacity-40">
+              /
+            </span>
+          ) : null}
+          <a
+            href={LOCALE_PATH[l]}
+            hrefLang={LOCALE_LANG[l]}
+            lang={LOCALE_LANG[l]}
+            data-cursor="link"
+            aria-current={l === locale ? "true" : undefined}
+            className={cn(
+              "-my-2 px-0.5 py-2 transition-opacity",
+              l === locale ? "opacity-100" : "opacity-60 hover:opacity-100"
+            )}
+          >
+            {l}
+          </a>
+        </span>
+      ))}
+    </nav>
+  );
+}
+
 export function Nav() {
+  const { nav, footer, ui } = useContent();
   const [open, setOpen] = useState(false);
   // Inline menu of wide screens (≥1024px), unfolding to the left of MENÚ.
   const [inlineOpen, setInlineOpen] = useState(false);
@@ -113,7 +149,7 @@ export function Nav() {
               opening it never moves or resizes anything else. */}
           <motion.nav
             id="nav-inline"
-            aria-label="Secciones"
+            aria-label={ui.sectionsNav}
             aria-hidden={!inlineOpen}
             inert={!inlineOpen}
             initial={false}
@@ -148,13 +184,16 @@ export function Nav() {
             })}
           </motion.nav>
 
+          {/* Language: ES / EN, to the left of MENÚ */}
+          <LanguageSwitch label={ui.language} />
+
           {/* Mobile: icon only, opens the full-screen menu */}
           <button
             type="button"
             data-cursor="link"
             onClick={() => setOpen(true)}
             className="relative z-50 -mr-2 flex h-11 w-11 flex-col items-center justify-center gap-[5px] md:hidden"
-            aria-label="Abrir menú"
+            aria-label={ui.openMenu}
             aria-expanded={open}
             aria-controls="nav-overlay"
             aria-haspopup="dialog"
@@ -172,7 +211,7 @@ export function Nav() {
             aria-controls={open ? "nav-overlay" : "nav-inline"}
             className="-my-3 hidden items-center gap-3 py-3 text-[13px] font-semibold uppercase tracking-wider md:flex"
           >
-            <RollText text="Menú" />
+            <RollText text={ui.menu} />
             <span aria-hidden className="relative block h-3 w-6">
               <motion.span
                 initial={false}
@@ -199,7 +238,7 @@ export function Nav() {
             id="nav-overlay"
             role="dialog"
             aria-modal="true"
-            aria-label="Menú"
+            aria-label={ui.menu}
             initial={{ clipPath: "inset(0 0 100% 0)" }}
             animate={{ clipPath: "inset(0 0 0% 0)" }}
             exit={{ clipPath: "inset(0 0 100% 0)" }}
@@ -216,7 +255,7 @@ export function Nav() {
                 onClick={() => setOpen(false)}
                 className="-my-3 -mr-3 p-3 text-[13px] font-semibold uppercase tracking-wider"
               >
-                Cerrar
+                {ui.close}
               </button>
             </div>
 
@@ -248,7 +287,7 @@ export function Nav() {
               <a href={`mailto:${footer.email}`} data-cursor="link" className="w-fit hover:text-accent">
                 {footer.email}
               </a>
-              <span>Lunes a viernes · 9 a 12 h</span>
+              <span>{ui.hours}</span>
             </div>
           </motion.div>
         )}

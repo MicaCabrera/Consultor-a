@@ -2,8 +2,9 @@ import { Section } from "@/components/section";
 import { Reveal } from "@/components/reveal";
 import { FadeHeading } from "@/components/fade-heading";
 import { Button } from "@/components/button";
-import { finalCta, footer } from "@/lib/content";
-import { WA, whatsappUrl } from "@/lib/mica";
+import { getContent, type Locale } from "@/lib/i18n";
+import { whatsappUrl } from "@/lib/mica";
+import { getChatScript } from "@/lib/chat-script";
 
 /** Text link with the menu's hover: a thin line sweeps under it and goes. */
 function UnderlineLink({ href, external, children }: { href: string; external?: boolean; children: React.ReactNode }) {
@@ -29,7 +30,8 @@ function UnderlineLink({ href, external, children }: { href: string; external?: 
  * placed, so on short screens the bar sits below the content instead of
  * covering it.
  */
-export function FinalCta() {
+export function FinalCta({ locale }: { locale: Locale }) {
+  const { finalCta, footer, ui } = getContent(locale);
   return (
     <Section
       id="contacto"
@@ -43,7 +45,7 @@ export function FinalCta() {
           <p className="mt-6 text-base text-muted md:text-lg">{finalCta.description}</p>
         </Reveal>
         <Reveal delay={0.25} className="mt-10 flex w-full flex-col items-center gap-4 sm:w-auto sm:flex-row">
-          <Button href={whatsappUrl(WA.avanzar)} external className="w-full justify-center sm:w-auto">
+          <Button href={whatsappUrl(getChatScript(locale).wa.avanzar)} external className="w-full justify-center sm:w-auto">
             {finalCta.cta}
           </Button>
         </Reveal>
@@ -74,7 +76,7 @@ export function FinalCta() {
           </p>
           <p>{footer.copyright}</p>
         </div>
-        <nav aria-label="Pie de página" className="flex flex-wrap justify-center gap-x-6 gap-y-1 md:justify-end">
+        <nav aria-label={ui.footerNav} className="flex flex-wrap justify-center gap-x-6 gap-y-1 md:justify-end">
           {footer.links.map((link) => (
             <UnderlineLink key={link.href} href={link.href}>
               {link.label}

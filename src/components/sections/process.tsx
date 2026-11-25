@@ -1,10 +1,11 @@
 import { Section } from "@/components/section";
 import { FadeHeading } from "@/components/fade-heading";
 import { Timeline } from "@/components/ui/timeline";
-import { process } from "@/lib/content";
+import { getContent, type Locale } from "@/lib/i18n";
 
 /** `id={null}` drops the anchor, for when a wrapper places it instead. */
-export function Process({ id = "como-funciona" }: { id?: string | null }) {
+export function Process({ locale, id = "como-funciona" }: { locale: Locale; id?: string | null }) {
+  const { process } = getContent(locale);
   return (
     <Section id={id ?? undefined} theme="light" className="pt-12 md:pt-16">
       {/* Pinned, horizontally scrolling timeline; the heading opens the track. */}

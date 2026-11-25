@@ -12,7 +12,7 @@ import {
 import { Section } from "@/components/section";
 import { useShutterRevealed } from "@/components/ui/slat-shutter";
 import { useSafeReducedMotion } from "@/lib/use-reduced-motion";
-import { intro } from "@/lib/content";
+import { useContent } from "@/components/locale-provider";
 import { cn } from "@/lib/utils";
 
 /*
@@ -87,6 +87,7 @@ type Geometry = {
 };
 
 function Title({ animate }: { animate: boolean }) {
+  const { intro } = useContent();
   const words = intro.heading.split(" ");
   return (
     <h2 className="text-5xl font-medium leading-[0.95] tracking-tight md:text-6xl lg:text-[5rem]">
@@ -111,6 +112,7 @@ function Title({ animate }: { animate: boolean }) {
 
 /** The three paragraphs, shown complete. */
 function StatementText() {
+  const { intro } = useContent();
   return (
     <div className="flex max-w-xl flex-col gap-5 text-base leading-relaxed text-fg md:gap-6 md:text-lg">
       {intro.paragraphs.map((paragraph, i) => (
@@ -142,7 +144,7 @@ function Statement() {
           same column as the rest of the site (max-w-6xl). */}
       <div
         ref={ref}
-        className="intro-statement relative mx-auto -mt-[25svh] max-w-6xl px-6 pb-28 text-left md:px-10 md:pb-40"
+        className="intro-statement relative mx-auto -mt-[48svh] max-w-6xl md:-mt-[55svh] px-6 pb-28 text-left md:px-10 md:pb-40"
       >
         <div className="max-w-3xl">
           <StatementText />
@@ -166,6 +168,7 @@ function useMediaQuery(query: string) {
 }
 
 function Photo({ className, sizes }: { className?: string; sizes: string }) {
+  const { intro } = useContent();
   return (
     <Image
       src={intro.photo.src}

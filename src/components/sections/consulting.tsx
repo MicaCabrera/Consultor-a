@@ -3,8 +3,9 @@ import { Reveal } from "@/components/reveal";
 import { FadeHeading } from "@/components/fade-heading";
 import { Button } from "@/components/button";
 import { CountUp } from "@/components/count-up";
-import { consulting } from "@/lib/content";
-import { WA, whatsappUrl } from "@/lib/mica";
+import { getContent, type Locale } from "@/lib/i18n";
+import { whatsappUrl } from "@/lib/mica";
+import { getChatScript } from "@/lib/chat-script";
 
 /** "USD 120" → currency "USD" and amount 120, so the amount can count up. */
 function splitPrice(price: string) {
@@ -15,7 +16,8 @@ function splitPrice(price: string) {
 // Same type as the big numbers of «Especialidades», at a smaller size.
 const BIG_NUMBER = "text-[clamp(84px,10vw,150px)] font-normal leading-[0.76] tracking-[-0.08em] opacity-60";
 
-export function Consulting() {
+export function Consulting({ locale }: { locale: Locale }) {
+  const { consulting } = getContent(locale);
   const price = splitPrice(consulting.price);
 
   return (
@@ -52,7 +54,7 @@ export function Consulting() {
         </div>
 
         <Reveal delay={0.25}>
-          <Button href={whatsappUrl(WA.avanzar)} external className="mt-12 w-full justify-center px-7 py-3.5 text-base sm:w-auto">
+          <Button href={whatsappUrl(getChatScript(locale).wa.avanzar)} external className="mt-12 w-full justify-center px-7 py-3.5 text-base sm:w-auto">
             {consulting.cta}
           </Button>
         </Reveal>

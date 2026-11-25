@@ -1,6 +1,6 @@
-import { consulting, footer, intro, specialties } from "@/lib/content";
+import { getContent, LOCALE_LANG, LOCALE_PATH, type Locale } from "@/lib/i18n";
 import { WHATSAPP_NUMBER, whatsappUrl } from "@/lib/mica";
-import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/site";
+import { SITE_NAME, SITE_URL } from "@/lib/site";
 
 /**
  * JSON-LD for search engines and AI assistants: who César is (Person), the
@@ -11,7 +11,9 @@ import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/site";
  * Facts given by the client, not shown on the page yet: sessions are online
  * and the service is international.
  */
-export function StructuredData() {
+export function StructuredData({ locale }: { locale: Locale }) {
+  const { consulting, footer, intro, specialties, meta } = getContent(locale);
+  const pageUrl = `${SITE_URL}${LOCALE_PATH[locale] === "/" ? "" : LOCALE_PATH[locale]}`;
   const price = /(\d+)/.exec(consulting.price)?.[1];
   const person = `${SITE_URL}/#cesar`;
   const service = `${SITE_URL}/#consultoria`;
@@ -23,7 +25,7 @@ export function StructuredData() {
       name: footer.name,
       url: SITE_URL,
       image: `${SITE_URL}${intro.photo.src}`,
-      jobTitle: "Consultor estratégico en tecnología, inteligencia artificial e innovación",
+      jobTitle: meta.jobTitle,
       description: intro.paragraphs[0],
       email: `mailto:${footer.email}`,
       sameAs: footer.social.map((s) => s.href),
@@ -32,14 +34,14 @@ export function StructuredData() {
     {
       "@type": "ProfessionalService",
       "@id": service,
-      name: `${footer.name} — Consultoría estratégica`,
+      name: `${footer.name} — ${meta.serviceName}`,
       url: SITE_URL,
       description: footer.description,
       founder: { "@id": person },
       email: footer.email,
       telephone: `+${WHATSAPP_NUMBER}`,
       areaServed: "Worldwide",
-      availableLanguage: ["es"],
+      availableLanguage: ["es", "en"],
       sameAs: footer.social.map((s) => s.href),
       contactPoint: {
         "@type": "ContactPoint",
@@ -47,11 +49,11 @@ export function StructuredData() {
         email: footer.email,
         telephone: `+${WHATSAPP_NUMBER}`,
         url: whatsappUrl(),
-        availableLanguage: ["es"],
+        availableLanguage: ["es", "en"],
       },
       hasOfferCatalog: {
         "@type": "OfferCatalog",
-        name: "Especialidades",
+        name: meta.catalogName,
         itemListElement: specialties.items.map((item) => ({
           "@type": "Offer",
           itemOffered: { "@type": "Service", name: item.title, description: item.description },
@@ -59,15 +61,15 @@ export function StructuredData() {
       },
       makesOffer: {
         "@type": "Offer",
-        name: "Consultoría individual de 60 minutos (online)",
+        name: meta.offerName,
         description: consulting.description,
         ...(price ? { price, priceCurrency: "USD" } : {}),
         availability: "https://schema.org/InStock",
-        url: `${SITE_URL}/#consultoria`,
+        url: `${pageUrl}/#consultoria`,
         itemOffered: {
           "@type": "Service",
-          name: "Consultoría estratégica individual",
-          serviceType: "Consultoría en tecnología, inteligencia artificial e innovación",
+          name: meta.serviceName,
+          serviceType: meta.serviceType,
           provider: { "@id": person },
           areaServed: "Worldwide",
           availableChannel: {
@@ -83,8 +85,8 @@ export function StructuredData() {
       "@id": `${SITE_URL}/#website`,
       url: SITE_URL,
       name: SITE_NAME,
-      description: SITE_DESCRIPTION,
-      inLanguage: "es-AR",
+      description: meta.description,
+      inLanguage: [LOCALE_LANG.es, LOCALE_LANG.en],
       publisher: { "@id": person },
     },
   ];

@@ -3,7 +3,7 @@
 import { Section } from "@/components/section";
 import { Button } from "@/components/button";
 import { FadeHeading } from "@/components/fade-heading";
-import { hero } from "@/lib/content";
+import { useContent } from "@/components/locale-provider";
 import { HeroVideo } from "@/components/ui/hero-video";
 
 /** Layout classes of the hero section, shared with its visual copies. */
@@ -24,6 +24,7 @@ export function Hero() {
  *  transition: the copies show the final state straight away, with no
  *  entrance animation, and their title isn't a heading (one h1 per page). */
 export function HeroContent({ copy = false }: { copy?: boolean }) {
+  const { hero } = useContent();
   return (
     <>
       <div className="absolute inset-0 -z-10 bg-gradient-to-b from-transparent via-transparent to-bg-dark" />

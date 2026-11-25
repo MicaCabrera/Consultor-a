@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { useShutterPhase } from "@/components/ui/slat-shutter";
 import { useSafeReducedMotion } from "@/lib/use-reduced-motion";
+import { useContent } from "@/components/locale-provider";
 
 // Layer behind the hero content (the section is `isolate`), never catching
 // clicks or touches.
@@ -41,6 +42,7 @@ export function HeroVideo() {
   // Once the shutter has fully opened, the hero is hidden: pause it.
   const hidden = useShutterPhase() === "done";
   const reduce = useSafeReducedMotion();
+  const { ui } = useContent();
   const ref = useRef<HTMLVideoElement | null>(null);
   const setRef = useCallback((video: HTMLVideoElement | null) => {
     ref.current = video;
@@ -108,7 +110,7 @@ export function HeroVideo() {
         type="button"
         data-cursor="link"
         onClick={() => setUserPaused(!paused)}
-        aria-label={paused ? "Reproducir el video de fondo" : "Pausar el video de fondo"}
+        aria-label={paused ? ui.playVideo : ui.pauseVideo}
         className="absolute bottom-6 left-6 z-10 flex h-10 w-10 items-center justify-center rounded-full border border-white/25 text-fg-dark/70 transition-colors hover:border-white/60 hover:text-fg-dark md:left-10"
       >
         <svg aria-hidden viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="currentColor">

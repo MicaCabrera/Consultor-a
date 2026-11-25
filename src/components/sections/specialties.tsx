@@ -6,9 +6,10 @@ import { useSafeReducedMotion } from "@/lib/use-reduced-motion";
 import { Section } from "@/components/section";
 import { Reveal } from "@/components/reveal";
 import { FadeHeading } from "@/components/fade-heading";
-import { specialties } from "@/lib/content";
+import { useContent } from "@/components/locale-provider";
+import type { Content } from "@/lib/i18n";
 
-type Item = (typeof specialties.items)[number];
+type Item = Content["specialties"]["items"][number];
 
 // Timing taken from the reference implementation.
 const EASE = [0.16, 1, 0.3, 1] as const;
@@ -17,10 +18,11 @@ const pad = (n: number) => String(n).padStart(2, "0");
 /** Big watermark number. All values are stacked in one cell and cross-faded,
  *  with a spring slide in the scroll direction so the change never jumps. */
 function ActiveNumber({ active }: { active: number }) {
+  const { specialties } = useContent();
   const reduce = useSafeReducedMotion();
 
   return (
-    <div className="grid select-none text-[clamp(160px,22vw,380px)] font-normal leading-[0.76] tracking-[-0.08em] text-fg-dark/10">
+    <div className="grid select-none text-[clamp(160px,22vw,300px)] font-normal leading-[0.76] tracking-[-0.08em] text-fg-dark/10">
       {specialties.items.map((item, i) => {
         const offset = i === active ? 0 : i < active ? -0.18 : 0.18;
         return (
@@ -108,6 +110,7 @@ function Card({
 }
 
 export function Specialties() {
+  const { specialties } = useContent();
   const [active, setActive] = useState(0);
   const cards = useRef<(HTMLElement | null)[]>([]);
 

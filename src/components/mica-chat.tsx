@@ -5,15 +5,9 @@ import { AnimatePresence, motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { useSafeReducedMotion } from "@/lib/use-reduced-motion";
 import { MicaAnimation } from "@/components/mica-animation";
-import {
-  STEPS,
-  WA,
-  matchFreeText,
-  whatsappUrl,
-  type Block,
-  type Choice,
-  type StepId,
-} from "@/lib/mica";
+import { whatsappUrl, type Block, type Choice, type StepId } from "@/lib/mica";
+import { getChatScript } from "@/lib/chat-script";
+import { useLocale } from "@/components/locale-provider";
 
 type Message =
   // `asked`: the free text that led to the fallback, sent along to WhatsApp.
@@ -40,6 +34,8 @@ export function MicaChat({ initialOpen = false }: { initialOpen?: boolean }) {
   const timer = useRef<number | undefined>(undefined);
 
   const reduce = useSafeReducedMotion();
+  const script = getChatScript(useLocale());
+  const { ui } = script;
   const panelId = useId();
   const inputRef = useRef<HTMLInputElement>(null);
   const logRef = useRef<HTMLDivElement>(null);
@@ -77,7 +73,7 @@ export function MicaChat({ initialOpen = false }: { initialOpen?: boolean }) {
     const text = draft.trim();
     if (!text || typing) return;
     setDraft("");
-    const step = matchFreeText(text);
+    const step = script.match(text);
     reply(text, step, step === "fallback" ? text : undefined);
   };
 
@@ -155,8 +151,8 @@ export function MicaChat({ initialOpen = false }: { initialOpen?: boolean }) {
             ref={launcherRef}
             type="button"
             data-cursor="link"
-            aria-label="Abrir chat"
-            title="Abrir chat con Avi, asistente virtual"
+            aria-label={ui.openChat}
+            title={ui.openChatTitle}
             aria-expanded={false}
             aria-controls={panelId}
             onClick={() => setOpen(true)}
@@ -183,7 +179,7 @@ export function MicaChat({ initialOpen = false }: { initialOpen?: boolean }) {
             id={panelId}
             role="dialog"
             aria-modal="true"
-            aria-label="Chat con Avi, asistente virtual"
+            aria-label={ui.dialog}
             onKeyDown={trapFocus}
             initial={reduce ? { opacity: 0 } : { opacity: 0, y: 24, scale: 0.98 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -201,22 +197,22 @@ export function MicaChat({ initialOpen = false }: { initialOpen?: boolean }) {
               <div className="min-w-0 flex-1 leading-tight">
                 <p className="font-semibold">Avi</p>
                 <p className="flex items-center gap-1.5 text-xs whitespace-nowrap text-muted-dark">
-                  Asistente virtual
+                  {ui.role}
                   <span aria-hidden>·</span>
                   <span className="relative flex h-1.5 w-1.5">
                     <span className="absolute inset-0 animate-ping rounded-full bg-accent opacity-60 motion-reduce:animate-none" />
                     <span className="relative h-1.5 w-1.5 rounded-full bg-accent" />
                   </span>
-                  En línea
+                  {ui.online}
                 </p>
               </div>
-              <HeaderButton href={whatsappUrl(WA.general)} label="Hablar por WhatsApp">
+              <HeaderButton href={whatsappUrl(script.wa.general)} label={ui.whatsapp}>
                 <WhatsAppIcon className="h-[18px] w-[18px]" />
               </HeaderButton>
-              <HeaderButton onClick={restart} label="Reiniciar conversación">
+              <HeaderButton onClick={restart} label={ui.restart}>
                 <RestartIcon className="h-[18px] w-[18px]" />
               </HeaderButton>
-              <HeaderButton onClick={close} label="Cerrar chat">
+              <HeaderButton onClick={close} label={ui.close}>
                 <CloseIcon className="h-[18px] w-[18px]" />
               </HeaderButton>
             </div>
@@ -245,7 +241,7 @@ export function MicaChat({ initialOpen = false }: { initialOpen?: boolean }) {
                       active={i === lastMicaIndex && !typing}
                       showBack={m.step !== "welcome" && m.step !== "menu"}
                       onChoice={onChoice}
-                      onBack={() => reply("Volver al menú principal", "menu")}
+                      onBack={() => reply(ui.back, "menu")}
                     />
                   )}
                 </motion.div>
@@ -257,7 +253,7 @@ export function MicaChat({ initialOpen = false }: { initialOpen?: boolean }) {
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
                     className="flex w-fit items-center gap-1 bg-white/[0.06] px-4 py-3"
-                    aria-label="Avi está escribiendo"
+                    aria-label={ui.typing}
                   >
                     {[0, 1, 2].map((d) => (
                       <motion.span
@@ -285,7 +281,7 @@ export function MicaChat({ initialOpen = false }: { initialOpen?: boolean }) {
                 ref={inputRef}
                 value={draft}
                 onChange={(e) => setDraft(e.target.value)}
-                placeholder="Escribí tu consulta…"
+                placeholder={ui.placeholder}
                 autoComplete="off"
                 maxLength={500}
                 className="min-w-0 flex-1 bg-white/[0.06] px-4 py-3 text-base text-fg-dark placeholder:text-muted-dark focus:bg-white/[0.09] focus:outline-none sm:text-sm"
@@ -294,7 +290,7 @@ export function MicaChat({ initialOpen = false }: { initialOpen?: boolean }) {
                 type="submit"
                 data-cursor="link"
                 disabled={!draft.trim() || typing}
-                aria-label="Enviar mensaje"
+                aria-label={ui.send}
                 className="flex h-11 w-11 shrink-0 items-center justify-center bg-accent text-bg-dark transition-opacity disabled:opacity-40"
               >
                 <SendIcon className="h-[18px] w-[18px]" />
@@ -323,7 +319,8 @@ function MicaTurn({
   onChoice: (choice: Choice) => void;
   onBack: () => void;
 }) {
-  const { say, cta, choices } = STEPS[step];
+  const script = getChatScript(useLocale());
+  const { say, cta, choices } = script.steps[step];
   return (
     <div className="flex max-w-[92%] flex-col items-start gap-3">
       <div className="space-y-3 bg-white/[0.06] px-4 py-3 text-[14px] leading-relaxed text-fg-dark/90">
@@ -333,7 +330,7 @@ function MicaTurn({
       </div>
 
       {cta && (
-        <WhatsAppButton message={asked ? WA.consulta(asked) : cta.whatsapp} primary>
+        <WhatsAppButton message={asked ? script.wa.consulta(asked) : cta.whatsapp} primary>
           {cta.label}
         </WhatsAppButton>
       )}
@@ -364,7 +361,7 @@ function MicaTurn({
               onClick={onBack}
               className="px-1 py-1.5 text-[12px] text-muted-dark underline-offset-4 transition-colors hover:text-fg-dark hover:underline"
             >
-              ← Volver al menú principal
+              ← {script.ui.back}
             </button>
           )}
         </div>

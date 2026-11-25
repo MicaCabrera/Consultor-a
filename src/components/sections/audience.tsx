@@ -2,9 +2,10 @@ import { Section } from "@/components/section";
 import { Reveal } from "@/components/reveal";
 import { FadeHeading } from "@/components/fade-heading";
 import { SpineAccordion } from "@/components/ui/spine-accordion";
-import { audience } from "@/lib/content";
+import { getContent, type Locale } from "@/lib/i18n";
 
-export function Audience() {
+export function Audience({ locale }: { locale: Locale }) {
+  const { audience } = getContent(locale);
   return (
     <Section theme="dark" mist className="px-6 py-28 md:px-10 md:py-36">
       <div className="mx-auto max-w-6xl">
